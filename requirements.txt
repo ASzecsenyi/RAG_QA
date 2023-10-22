@@ -4,20 +4,3 @@ numpy~=1.26.0
 pandas~=2.1.1
 wandb~=0.15.12
 datasets~=2.14.5
-```
-
-## Usage
-
-### Training
-
-```bash
-python train.py --config configs/defaults.yaml
-```
-
-### Evaluation
-
-```bash
-python eval.py --config configs/defaults.yaml
-```
-
-## Results
