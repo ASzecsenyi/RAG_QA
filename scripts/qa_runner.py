@@ -1,10 +1,13 @@
 import time
 
 from qa.GptQA import GptQA
+from qa.MistralQA import MistralQA
 
 start_time = time.time()
 
-qa = GptQA(name="gptqa")
+gpt_qa = GptQA(name="gptqa")
+mi_qa = MistralQA(name="mistralqa")
+
 
 question = "What is the full name of the main character?"
 
@@ -16,6 +19,7 @@ chunks = [
     "He is a pilot.",
 ]
 
-print(qa.predict(question, chunks))
+print('gpt', gpt_qa.predict(question, chunks))
+print('mistral', mi_qa.predict(question, chunks))
 
 print("--- %s seconds ---" % (time.time() - start_time))
