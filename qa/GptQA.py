@@ -50,7 +50,7 @@ class GptQA(QA):
             messages=messages,
         )
 
-        return response.choices[0].message
+        return response.choices[0].message["content"]
 
 
 

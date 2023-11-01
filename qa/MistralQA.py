@@ -43,4 +43,4 @@ class MistralQA(QA):
             headers={"Authorization": f"Bearer {self.api_key}"},
             json={"inputs": inputs})
 
-        return response.json()[0]["generated_text"]
+        return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
