@@ -12,10 +12,8 @@ This repository is dedicated to the RAG_QA project, which focuses on Retrieval A
 - `notebooks/`: Jupyter notebooks for data analysis.
 - `scripts/`: Standalone Python scripts.
 - `doc/`: Research papers and documentation.
-- `config/`: Experiment configuration files.
 - `templates/`: Django templates.
 - `static/`: Static files.
-- `media/`: User-uploaded media files.
 - `requirements.txt`: Required Python packages.
 - `manage.py`: Django management script.
 

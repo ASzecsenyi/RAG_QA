@@ -1,7 +1,7 @@
 import time
 
-from retrieval.chunking.CharChunker import CharChunker
-from retrieval.ranking.TfidfRanker import TfidfRanker
+from retrieval.Chunker.CharChunker import CharChunker
+from retrieval.Ranker.TfidfRanker import TfidfRanker
 
 start_time = time.time()
 

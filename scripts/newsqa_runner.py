@@ -2,8 +2,8 @@ from datasets import load_dataset
 
 import time
 
-from retrieval.chunking.CharChunker import CharChunker
-from retrieval.ranking.TfidfRanker import TfidfRanker
+from retrieval.Chunker.CharChunker import CharChunker
+from retrieval.Ranker.TfidfRanker import TfidfRanker
 
 from qa.GptQA import GptQA
 from qa.MistralQA import MistralQA

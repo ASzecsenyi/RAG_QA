@@ -1,4 +1,4 @@
-from retrieval.chunking import Chunker
+from retrieval.Chunker import Chunker
 
 
 class CharChunker(Chunker):
