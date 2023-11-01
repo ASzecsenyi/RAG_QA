@@ -5,7 +5,6 @@ import time
 from retrieval.Chunker.CharChunker import CharChunker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
 
-from qa.GptQA import GptQA
 from qa.MistralQA import MistralQA
 
 newsqa = load_dataset('newsqa', data_dir='../data/files')
@@ -32,7 +31,6 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 start_time = time.time()
 
-gpt_qa = GptQA(name="gptqa")
 mi_qa = MistralQA(name="mistralqa")
 
 print('gpt', gpt_qa.predict(query, chunks))
