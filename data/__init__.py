@@ -27,6 +27,16 @@ class Document(ABC):
         self.questions: list[dict[str, Any]] = questions
 
         assert all("question" in question for question in self.questions), "questions must have a question field"
+        assert all("ground_truths" in question for question in self.questions), "questions must have a ground_truths field"
+
+    def __repr__(self):
+        return f"Document(name={self.name}, document={self.document}, questions={self.questions})"
+
+    def __str__(self):
+        return f"Document(name={self.name}, document={self.document}, questions={self.questions})"
+
+    def __len__(self):
+        return len(self.document)
 
     @classmethod
     def from_json(cls, path: str, name: str = None) -> "Document":

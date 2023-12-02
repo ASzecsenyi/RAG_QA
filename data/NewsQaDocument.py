@@ -29,43 +29,31 @@ class NewsQaDocument(Document):
         if name is None:
             name = f"newsqa_{story_id}"
 
+        # get all instances of the story and questions about it
         story_questions = newsqa[split].filter(lambda x: x['story_id'] == story_id)
 
         assert len(story_questions) > 0, "story_id must be in the dataset"
 
-        for question in story_questions:
-            if len(question['story_text']) != len(story_questions['story_text'][0]):
-                # convert answer_token_ranges to be relative to the story_text[0]
-                # answer_token_ranges is a string of the form "start:end,start2:end2"
-                # convert to a list of ints
-                answer_token_ranges = question['answer_token_ranges'].split(',')
-                answer_token_ranges = [answer_token_range.split(':') for answer_token_range in answer_token_ranges]
-                # convert to ints
-                answer_token_ranges = [
-                    [int(answer_token_range[0]), int(answer_token_range[1])]
-                    for answer_token_range in answer_token_ranges
-                ]
-                # get the answer span from the story_text
-                for answer_token_range in answer_token_ranges:
-                    answer_span = question['story_text'][answer_token_range[0]:answer_token_range[1]]
-                    # find the answer span in the first story_text
-                    answer_token_start = story_questions['story_text'][0].index(answer_span)
-                    answer_token_end = answer_token_start + len(answer_span)
-                    # update the answer_token_ranges
-                    answer_token_range[0] = answer_token_start
-                    answer_token_range[1] = answer_token_end
-                # convert back to a string
-                answer_token_ranges = [
-                    f"{answer_token_range[0]}:{answer_token_range[1]}"
-                    for answer_token_range in answer_token_ranges
-                ]
-                question['answer_token_ranges'] = ','.join(answer_token_ranges)
+        # it is assumed that all story_text instances with the same story_id are the same
 
         document = story_questions['story_text'][0]
 
         questions: list[dict[str, Any]] = []
         for question in story_questions:
-            questions.append({"question": question['question'], "answer_token_ranges": question['answer_token_ranges']})
+            # get texts at the answer token ranges
+            answer_token_ranges = [
+                [int(token_range.split(':')[0]), int(token_range.split(':')[1])]
+                for token_range in question['answer_token_ranges'].split(',')]
+            document_tokens = document.split(' ')
+            ground_truths = [' '.join(document_tokens[start:end]) for start, end in answer_token_ranges]
+
+            questions.append(
+                {
+                    "question": question['question'],
+                    "answer_token_ranges": question['answer_token_ranges'],
+                    "ground_truths": ground_truths,
+                }
+            )
 
         super().__init__(document, name, questions)
 
