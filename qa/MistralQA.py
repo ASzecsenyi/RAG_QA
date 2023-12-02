@@ -35,12 +35,19 @@ class MistralQA(QA):
         """
 
         inputs = (f"<s>[INST] {chunks} [/INST] "
-                  f"Thank you, I will now answer your question based on this information. "
+                  f"Thank you, I will now very briefly answer your question based on this information. "
                   f"[INST] {question} [/INST]")
 
-        response = requests.post(
-            "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
-            headers={"Authorization": f"Bearer {self.api_key}"},
-            json={"inputs": inputs})
+        try:
+            response = requests.post(
+                "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                json={"inputs": inputs,
+                      "parameters": {"max_new_tokens": 100}})
+        except requests.exceptions.ConnectionError:
+            input("Paused due to lost connection. Press enter to continue.")
+            return self.predict(question, chunks)
+
+        response.raise_for_status()
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
