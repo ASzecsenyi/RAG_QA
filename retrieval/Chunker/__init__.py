@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import uuid4
 
 
 class Chunker(ABC):
@@ -9,7 +8,7 @@ class Chunker(ABC):
         :type chunk_length: int
         :param sliding_window_size: The size of the sliding window. Defines the overlap between chunks. Must be between 0.0 and 1.0, defaults to 0.0.
         :type sliding_window_size: float, optional
-        :param name: The name of the chunker, defaults to None - uses the class name and a uuid
+        :param name: The name of the chunker, defaults to None - uses the class name
         :type name: str, optional
         """
 
@@ -19,7 +18,7 @@ class Chunker(ABC):
         self.sliding_window_size = sliding_window_size
         self.name = name
         if name is None:
-            self.name = self.__class__.__name__ + f"_{chunk_length}_{sliding_window_size}_{uuid4()}"
+            self.name = self.__class__.__name__ + f"_{chunk_length}_{sliding_window_size}"
 
     @abstractmethod
     def chunk(self, document: str) -> list[str]:

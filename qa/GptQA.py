@@ -20,6 +20,8 @@ class GptQA(QA):
                     "OPENAI_API_KEY environment variable not found. Please set it or pass it as an argument."
                 )
 
+        self.name += f"_{self.api_key[-5:]}"
+
         openai.api_key = self.api_key
 
     def predict(self, question: str, chunks: list[str]) -> str:

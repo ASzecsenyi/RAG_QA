@@ -8,9 +8,9 @@ from retrieval.Ranker.TfidfRanker import TfidfRanker
 import json
 
 
-document = NewsQaDocument(name="newsqa", story_id='./cnn/stories/289a45e715707cf650352f3eaa123f85d3653d4b.story')
-document2 = NewsQaDocument(name="newsqa", story_id='./cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story')
-document3 = NewsQaDocument(name="newsqa", story_id='./cnn/stories/017df5c4fe1e79eb26957ff6a8b4c1e41cd966ac.story')
+document = NewsQaDocument(name="newsqa_1", story_id='./cnn/stories/289a45e715707cf650352f3eaa123f85d3653d4b.story')
+document2 = NewsQaDocument(name="newsqa_2", story_id='./cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story')
+document3 = NewsQaDocument(name="newsqa_3", story_id='./cnn/stories/017df5c4fe1e79eb26957ff6a8b4c1e41cd966ac.story')
 
 all_documents = NewsQaDocument.all_documents()
 
@@ -34,7 +34,8 @@ experiment = Experiment(
 
 experiment.verbose = True
 
-results = experiment.load_results("../data/files/test_first20.json")
+results = experiment.run()
+# experiment.load_results("../data/files/test_first20.json")
 
 # pretty print results
 print(json.dumps(results, indent=4, sort_keys=True))

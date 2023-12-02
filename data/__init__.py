@@ -1,7 +1,6 @@
 from abc import ABC
 import json
 from typing import Any
-from uuid import uuid4
 
 
 class Document(ABC):
@@ -22,7 +21,7 @@ class Document(ABC):
         """
         self.name = name
         if name is None:
-            self.name = "_".join(document.split()[:5]) + f"_{uuid4()}"
+            self.name = "_".join(document.split()[:5])
         self.document: str = document
         self.questions: list[dict[str, Any]] = questions
 

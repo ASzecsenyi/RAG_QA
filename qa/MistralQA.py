@@ -21,6 +21,8 @@ class MistralQA(QA):
                     "HUGGINGFACE_API_KEY environment variable not found. Please set it or pass it as an argument."
                 )
 
+        self.name += f"_{self.api_key[-5:]}"
+
     def predict(self, question: str, chunks: list[str]) -> str:
         """
         Predicts the answer to a question given a context.

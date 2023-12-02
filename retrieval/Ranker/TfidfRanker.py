@@ -14,6 +14,7 @@ class TfidfRanker(Ranker):
         :type kwargs: dict
         """
         super().__init__(top_k)
+        self.name += f"_{kwargs}"
         self.vectorizer = TfidfVectorizer(**kwargs)
         self.vectors = None
 

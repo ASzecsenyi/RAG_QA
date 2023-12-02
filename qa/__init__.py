@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import uuid4
 
 
 class QA(ABC):
@@ -11,13 +10,13 @@ class QA(ABC):
         """
         Initializes the QA model.
 
-        :param name: The name of the QA model, defaults to None - uses the class name and a uuid
+        :param name: The name of the QA model, defaults to None - uses the class name
         :type name: str, optional
         """
 
         self.name = name
         if name is None:
-            self.name = self.__class__.__name__ + f"_{uuid4()}"
+            self.name = self.__class__.__name__
 
     @abstractmethod
     def predict(self, question: str, chunks: list[str]) -> str:
