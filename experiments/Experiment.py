@@ -4,7 +4,7 @@ import time
 
 from ragas import evaluate
 from datasets import Dataset
-from typing import Union, Dict, Any
+from typing import Union, Any
 from rouge_score import rouge_scorer
 
 from data import Document
@@ -12,7 +12,7 @@ from retrieval import Chunker, Ranker
 from qa import QA
 
 
-def evaluate_rouge_score(answers, ground_truths):
+def evaluate_rouge_score(answers: list[str], ground_truths: list[str]):
     """
     Evaluates the answers with the ROGUE score.
 
@@ -27,7 +27,12 @@ def evaluate_rouge_score(answers, ground_truths):
 
     scorer = rouge_scorer.RougeScorer(['rouge1'], use_stemmer=True)
     scores = [scorer.score(prediction=answer, target=' '.join(ground_truth)) for answer, ground_truth in zip(answers, ground_truths)]
-    return scores
+
+    score = {}
+    for metric in scores[0]:
+        score[metric] = sum([score[metric].fmeasure for score in scores]) / len(scores)
+
+    return score
 
 
 class Experiment:
@@ -234,10 +239,6 @@ class Experiment:
 
             # evaluate results with rogue score
             evaluation = evaluate_rouge_score(answers, ground_truths)
-
-            mean_evaluation = {}
-            for key in evaluation[0].keys():
-                mean_evaluation[key] = sum([e[key] for e in evaluation]) / len(evaluation)
 
             evalutions[result_setup] = evaluation
 
