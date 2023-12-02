@@ -28,11 +28,29 @@ def evaluate_rouge_score(answers: list[str], ground_truths: list[str]):
     scorer = rouge_scorer.RougeScorer(['rouge1'], use_stemmer=True)
     scores = [scorer.score(prediction=answer, target=' '.join(ground_truth)) for answer, ground_truth in zip(answers, ground_truths)]
 
-    score = {}
-    for metric in scores[0]:
-        score[metric] = sum([score[metric].fmeasure for score in scores]) / len(scores)
+    print(scores)
 
-    return score
+    final_score = {
+        'fmeasure': sum([score['rouge1'].fmeasure for score in scores]) / len(scores),
+        'precision': sum([score['rouge1'].precision for score in scores]) / len(scores),
+        'recall': sum([score['rouge1'].recall for score in scores]) / len(scores)
+    }
+
+    return final_score
+
+
+def evaluate_ragas_score(results_dataset: Dataset):
+    """
+    Evaluates the results with ragas.
+
+    :param results_dataset: The results dataset
+    :type results_dataset: Dataset
+
+    :return: The evaluation
+    :rtype: dict[str, dict[str, float]]
+    """
+
+    return evaluate(results_dataset)
 
 
 class Experiment:
@@ -216,7 +234,7 @@ class Experiment:
             )
 
             # evaluate results with ragas
-            evaluation = evaluate(results_dataset)
+            evaluation = evaluate_ragas_score(results_dataset)
 
             evalutions[result_setup] = evaluation
 

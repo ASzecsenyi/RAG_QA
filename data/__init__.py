@@ -56,7 +56,7 @@ class Document(ABC):
         if name is None:
             name = data["name"]
 
-        return cls(name, data["document"], data["questions"])
+        return cls(name=name, document=data["document"], questions=data["questions"])
 
     def save(self, path: str = None):
         """
