@@ -135,14 +135,14 @@ class Experiment:
 
         for dataset in self.dataset:
             for chunker in self.chunker:
-                chunks = self.r(chunker.chunk, "Chunking", times, document=dataset.document)
+                chunks = self.r(chunker.chunk, f"Chunking data {dataset.name} with {chunker.name}", times, document=dataset.document)
 
                 for ranker in self.ranker:
-                    self.r(ranker.init_chunks, "Initialising ranker", times, chunks=chunks)
+                    self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
                     for question in dataset.questions:
-                        chunks = self.r(ranker.rank, "Ranking", times, query=question["question"], silenced=True)
+                        chunks = self.r(ranker.rank, f"Ranking question {question}", times, query=question["question"], silenced=True)
 
                         for qa in self.qa:
                             # if the question does not already have an answer in results, predict one
@@ -170,7 +170,7 @@ class Experiment:
         """
 
         if path is None:
-            path = f"../data/files/{self.name}.json"
+            path = f"../data/experiments/{self.name}.json"
 
         saved_results = {"name": self.name, "description": self.description, "results": self.results}
 
@@ -187,8 +187,8 @@ class Experiment:
 
         if path is None:
             assert os.path.exists(f"../data"), "Experiment must be run before loading results"
-            assert os.path.exists(f"../data/files"), "Experiment must be run before loading results"
-            path = f"../data/files/{self.name}.json"
+            assert os.path.exists(f"../data/experiments"), "Experiment must be run before loading results"
+            path = f"../data/experiments/{self.name}.json"
 
         with open(path, "r") as f:
             saved_results = json.load(f)
@@ -261,12 +261,3 @@ class Experiment:
             evalutions[result_setup] = evaluation
 
         return evalutions
-
-
-
-
-
-
-
-
-
