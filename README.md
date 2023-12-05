@@ -33,3 +33,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 - TODO: Mention any contributors or sources of inspiration here.
 
+ragas~=0.0.19
+datasets~=2.14.5
