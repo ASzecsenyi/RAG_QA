@@ -44,18 +44,28 @@ class GuessSimilarityRanker(Ranker):
 
         chunks_arr: np.ndarray = np.vstack(vectors, dtype="float32")
 
+        faiss.normalize_L2(chunks_arr)
+
         # #### FAISS ####
         self.index = faiss.index_factory(embedding_size, "Flat", faiss.METRIC_INNER_PRODUCT)
         self.index.add(chunks_arr)
 
     def rank(self, query: str) -> list[str]:
-        answers = self.get_guesses(query)
+        answers: list[str] = self.get_guesses(query)
+        print(answers)
         query_vectors = self.model.encode(answers)
         query_arr: np.ndarray = np.vstack(query_vectors, dtype="float32")
-        _, indices = self.index.search(query_arr, self.top_k)
+        if query_arr.shape[1] != self.index.d:
+            print("mismatch:", query_arr.shape[1], self.index.d)
+            # query_arr = np.resize(query_arr, (query_arr.shape[0], self.index.d))
+        _, indices = self.index.search(query_arr, len(self.chunks))
         ranks = [[self.chunks[i] for i in indices[j]] for j in range(len(answers))]
-        # return mean of ranks
-        return [np.mean([ranks[i][j] for i in range(len(answers))]) for j in range(len(ranks[0]))]
+        # calculate mean similarity for each chunk per answer
+        ranks = [[np.mean([np.inner(query_vectors[j], self.model.encode([chunk])[0]) for chunk in rank])] for j, rank in enumerate(ranks)]
+        # sort by mean similarity
+        ranks = [list(np.array(ranks).argsort(axis=0).flatten())]
+
+        return [self.chunks[i] for i in ranks[0]]
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
@@ -81,4 +91,11 @@ class GuessSimilarityRanker(Ranker):
 
         response.raise_for_status()
 
-        return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
+        response_str = response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
+
+        r_list = response_str.split(";\n")
+
+        if len(r_list) < self.num_of_paraphrases:
+            r_list += ["MASK"] * (self.num_of_paraphrases - len(r_list))
+
+        return r_list
