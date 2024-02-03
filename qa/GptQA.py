@@ -1,3 +1,5 @@
+from typing import Union
+
 from qa import QA
 
 import os
@@ -24,7 +26,7 @@ class GptQA(QA):
 
         openai.api_key = self.api_key
 
-    def predict(self, question: str, chunks: list[str]) -> str:
+    def predict(self, question: str, chunks: list[str], logprobs: bool = False) -> Union[str, tuple[str, list]]:
         """
         Predicts the answer to a question given a context.
 
@@ -32,6 +34,8 @@ class GptQA(QA):
         :type question: str
         :param chunks: the context
         :type chunks: list[str]
+        :param logprobs: whether to return log probabilities
+        :type logprobs: bool
 
         :return: the answer
         :rtype: str
@@ -50,7 +54,11 @@ class GptQA(QA):
             max_tokens=100,
             stop=["\n"],
             messages=messages,
+            logprobs=logprobs,
         )
+
+        if logprobs:
+            return response.choices[0].message["content"], response.choices[0].logprobs["content"]
 
         return response.choices[0].message["content"]
 
