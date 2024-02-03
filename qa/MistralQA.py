@@ -44,8 +44,13 @@ class MistralQA(QA):
             response = requests.post(
                 "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
                 headers={"Authorization": f"Bearer {self.api_key}"},
-                json={"inputs": inputs,
-                      "parameters": {"max_new_tokens": 100}})
+                json={
+                    "inputs": inputs,
+                    "parameters": {
+                        "max_new_tokens": 100,
+                    }
+                }
+            )
         except requests.exceptions.ConnectionError:
             input("Paused due to lost connection. Press enter to continue.")
             return self.predict(question, chunks)

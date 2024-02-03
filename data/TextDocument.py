@@ -3,7 +3,7 @@ from data import Document
 
 class TextDocument(Document):
     """
-    A document from the UX from 30,000ft dataset. Author: Simon Harper
+    A document from the user upload
     """
 
     def __init__(self, document: str):
