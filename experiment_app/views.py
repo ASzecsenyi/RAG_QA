@@ -1,65 +1,42 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
 from experiments import answer_single_question
 from qa.MistralQA import MistralQA
 from retrieval.Chunker.CharChunker import CharChunker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
-# Create your views here.
-from .forms import TextFileUploadForm, ChunkerForm, RankerForm, QAForm
+from data.TextDocument import TextDocument
+
+from .forms import ExperimentForm
+# from .models import Experiment
 
 
-def model_form_upload(request):
+def experiment_create_view(request):
+    answer = None  # Use None as the default state to signify no answer yet
+
     if request.method == 'POST':
-        form = TextFileUploadForm(request.POST, request.FILES)
-        chunker_form = ChunkerForm(request.POST)
-        ranker_form = RankerForm(request.POST)
-        qa_form = QAForm(request.POST)
-        answer = False
-        if form.is_valid() and chunker_form.is_valid() and ranker_form.is_valid() and qa_form.is_valid():
-            if form.cleaned_data['file']:
-                uploaded_file = form.save()
-                file_data = ""
+        form = ExperimentForm(request.POST, request.FILES)
+        if form.is_valid():
+            experiment = form.save()
+            text_document = experiment.experimenttextdocument_set.first()
+            chunker_params = experiment.experimentchunker_set.first()
+            ranker_params = experiment.experimentranker_set.first()
+            qa_params = experiment.experimentqa_set.first()
 
-                for chunk in uploaded_file.file.chunks():
-                    file_data += chunk.decode('utf-8')
+            if all([text_document, chunker_params, ranker_params, qa_params]):
+                # text_document either has a file or a file_path
+                if text_document.file and False:
+                    file_data = TextDocument(text_document.file.read().decode('utf-8'))
+                else:
+                    with open(text_document.file_path, 'r') as file:
+                        file_data = TextDocument(file.read())
+                chunker = CharChunker(chunk_length=chunker_params.chunk_length,
+                                      sliding_window_size=chunker_params.sliding_window_size)
+                ranker = TfidfRanker(ranker_params.top_k)
+                qa = MistralQA(qa_params.model_name)
 
-                # set the file path to the uploaded file
-                uploaded_file.file_path = uploaded_file.file.path
-            elif form.cleaned_data['file_path']:
-                with open(form.cleaned_data['file_path'], 'r') as file:
-                    file_data = file.read()
+                answer = answer_single_question(text_document.question, file_data, chunker, ranker, qa)
 
-                uploaded_file = form.save()
-
-            chunker = CharChunker(chunk_length=chunker_form.cleaned_data['chunk_length'],
-                                  sliding_window_size=chunker_form.cleaned_data['sliding_window_size'])
-            ranker = TfidfRanker(ranker_form.cleaned_data['num_rank'])
-            qa = MistralQA(qa_form.cleaned_data['model_name'])
-
-            answer = answer_single_question(question=form.cleaned_data['question'],
-                                            dataset=file_data,
-                                            chunker=chunker,
-                                            ranker=ranker,
-                                            qa=qa)
-            # Save the form data, the answer, and the path to the uploaded file in the session
-            request.session['form_data'] = request.POST
-            request.session['answer'] = answer
-            request.session['file_path'] = uploaded_file.file_path
-            return redirect('experiment_app:model_form_upload')
-    else:
-        # Retrieve the form data, the answer, and the path to the uploaded file from the session
-        form_data = request.session.get('form_data', {})
-        answer = request.session.get('answer', False)
-        file_path = request.session.get('file_path', None)
-        form_data['file_path'] = file_path
-        form = TextFileUploadForm(form_data)
-        chunker_form = ChunkerForm(form_data)
-        ranker_form = RankerForm(form_data)
-        qa_form = QAForm(form_data)
-    return render(request, 'experiment_app/model_form_upload.html', {
-        'form': form,
-        'chunker_form': chunker_form,
-        'ranker_form': ranker_form,
-        'qa_form': qa_form,
-        'answer': answer
+    return render(request, 'experiment_app/experiment_create_view.html', {
+        'form': ExperimentForm(),
+        'answer': answer,
     })
