@@ -31,6 +31,7 @@ class TfidfRanker(Ranker):
         super().__init__(top_k)
         self.name += f"_{kwargs}"
         self.vectorizer = TfidfVectorizer(**kwargs)
+        self.chunks = None
         self.vectors = None
 
     def init_chunks(self, chunks: list[str]):
