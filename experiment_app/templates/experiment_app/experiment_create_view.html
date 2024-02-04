@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>Experiment Submission</title>
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Add Experiment</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Display the basic form fields -->
+        {{ form.as_p }}
+
+        <div id="componentsContainer">
+            <!-- Container for dynamically added components -->
+        </div>
+
+        <!-- Buttons to add new component of each type -->
+        <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document</button>
+        <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
+        <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
+        <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <div id="answer" class="container mt-5">
+        <!-- if the answer is not the empty string: -->
+        {% if answer %}
+            <h2>Answer:</h2>
+            <p>{{ answer }}</p>
+            <h2>Context:</h2>
+            <p>{{ context }}</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    let indexCount = 0;
+
+    function addTextDocumentComponent() {
+        const html = `
+    <div class="mb-3">
+        <hr> txt file
+        <input type="file"  name="file_${indexCount}" class="form-control mb-2" accept=".txt">
+        <input type="text" name="question_${indexCount}" placeholder="Question" class="form-control mb-2">
+        <input type="number" name="ExperimentTextDocument_id_${indexCount}">
+    </div>
+  `;
+        $('#componentsContainer').append(html);
+        indexCount++;
+    }
+
+    function addChunkerComponent() {
+        const html = `
+    <div class="mb-3">
+        <hr>
+        <input type="number" name="chunk_length_${indexCount}" placeholder="Chunk Length" class="form-control mb-2">
+        <input type="text" name="sliding_window_size_${indexCount}" placeholder="Sliding Window Size" class="form-control mb-2">
+        <input type="text" name="chunker_name_${indexCount}" placeholder="Chunker Name" class="form-control mb-2">
+        <input type="number" name="ExperimentChunker_id_${indexCount}">
+    </div>
+  `;
+        $('#componentsContainer').append(html);
+        indexCount++;
+    }
+
+    function addRankerComponent() {
+        const html = `
+    <div class="mb-3">
+        <hr>
+        <input type="number" name="top_k_${indexCount}" placeholder="Top K" class="form-control mb-2">
+        <input type="text" name="ranker_name_${indexCount}" placeholder="Ranker Name" class="form-control mb-2">
+        <input type="number" name="ExperimentRanker_id_${indexCount}">
+    </div>
+  `;
+        $('#componentsContainer').append(html);
+        indexCount++;
+    }
+
+    function addQAComponent() {
+        const html = `
+    <div class="mb-3">
+        <hr>
+        <input type="text" name="model_name_${indexCount}" placeholder="Model Name" class="form-control mb-2">
+        <input type="number" name="ExperimentQA_id_${indexCount}">
+    </div>
+  `;
+        $('#componentsContainer').append(html);
+        indexCount++;
+    }
+</script>
+
+</body>
+</html>

@@ -17,11 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from .views import model_form_upload
+from .views import experiment_create_view
 
 app_name = 'experiment_app'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('upload/', model_form_upload, name='model_form_upload'),
+    path('upload/', experiment_create_view, name='experiment_create_view'),
 ]
