@@ -144,3 +144,13 @@ class ExperimentForm(forms.ModelForm):
             self.most_recent_experiment.delete()
 
         return experiment
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Iterate over self.files
+        for key, file in self.files.items():
+            # Add each file to cleaned_data
+            cleaned_data[key] = file
+
+        return cleaned_data
