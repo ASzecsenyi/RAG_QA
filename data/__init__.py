@@ -16,7 +16,7 @@ class Document(ABC):
         :type name: str, optional
         :param document: the document to get data from
         :type document: str
-        :param questions: the evaluation data, defaults to None - uses format [{"question": "Whodunnit?", "answers": "The butler."}, ]
+        :param questions: the evaluation data, defaults to None - uses format [{"question": "Whodunnit?", "ground_truths": ["The butler did it."]}]
         :type questions: list[dict[str, Any]], optional
         """
         self.name = name
@@ -29,10 +29,10 @@ class Document(ABC):
         assert all("ground_truths" in question for question in self.questions), "questions must have a ground_truths field"
 
     def __repr__(self):
-        return f"Document(name={self.name}, document={self.document}, questions={self.questions})"
+        return f"Document(name={self.name}, document={self.document[:10]}, questions={self.questions})"
 
     def __str__(self):
-        return f"Document(name={self.name}, document={self.document}, questions={self.questions})"
+        return f"Document(name={self.name}, document={self.document[:10]}, questions={self.questions})"
 
     def __len__(self):
         return len(self.document)

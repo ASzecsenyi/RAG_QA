@@ -131,7 +131,7 @@ class Experiment:
         try:
             self.load_results()
         except FileNotFoundError:
-            pass
+            print("No results found, running experiment")
 
         for dataset in self.dataset:
             for chunker in self.chunker:
@@ -171,6 +171,9 @@ class Experiment:
 
         if path is None:
             path = f"../data/experiments/{self.name}.json"
+            # create the directory if it does not exist
+            if not os.path.exists(f"../data/experiments"):
+                os.makedirs(f"../data/experiments")
 
         saved_results = {"name": self.name, "description": self.description, "results": self.results}
 
@@ -186,8 +189,10 @@ class Experiment:
         """
 
         if path is None:
-            assert os.path.exists(f"../data"), "Experiment must be run before loading results"
-            assert os.path.exists(f"../data/experiments"), "Experiment must be run before loading results"
+            if not os.path.exists(f"../data"):
+                raise FileNotFoundError("No data directory found")
+            if not os.path.exists(f"../data/experiments"):
+                raise FileNotFoundError("No experiments directory found")
             path = f"../data/experiments/{self.name}.json"
 
         with open(path, "r") as f:
@@ -261,3 +266,6 @@ class Experiment:
             evalutions[result_setup] = evaluation
 
         return evalutions
+
+    def __repr__(self):
+        return f"Experiment(name={self.name}, description={self.description}, dataset={self.dataset}, chunker={self.chunker}, ranker={self.ranker}, qa={self.qa})"
