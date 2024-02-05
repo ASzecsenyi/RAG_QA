@@ -1,7 +1,9 @@
+import re
 from typing import Any, List
 from django import forms
 from django.db import transaction
 
+from rgqa_project.settings import MEDIA_ROOT
 from .models import Experiment, ExperimentTextDocument, ExperimentChunker, ExperimentRanker, ExperimentQA
 
 
@@ -9,6 +11,7 @@ class ExperimentForm(forms.ModelForm):
     components = {
         ExperimentTextDocument: {
             'file': forms.FileField,
+            'file_path': forms.CharField,
             'question': forms.CharField,
         },
         ExperimentChunker: {
@@ -36,15 +39,22 @@ class ExperimentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.id_dict = {}
+
+        self.most_recent_experiment = Experiment.objects.last()
+
+        # Initialize experiment fields
+        self.initial['name'] = self.most_recent_experiment.name if self.most_recent_experiment else ''
+        self.initial['description'] = self.most_recent_experiment.description if self.most_recent_experiment else ''
+
         # Initialize component fields for both existing and new forms, assuming at least one set for new instances
         for component, component_fields in self.components.items():
             self.init_component_fields(component, component_fields)
 
+        print(self.id_dict)
+
     def init_component_fields(self, component, component_fields: dict[str, Any]):
-        # get the most recent experiment
-        most_recent_experiment = Experiment.objects.last()
         # get the components of the most recent experiment
-        components = component.objects.filter(experiment=most_recent_experiment) if most_recent_experiment else None
+        components = component.objects.filter(experiment=self.most_recent_experiment) if self.most_recent_experiment else None
 
         if not components:
             components = [component()]
@@ -57,70 +67,80 @@ class ExperimentForm(forms.ModelForm):
 
                 if field_name == 'file':
                     self.fields[field_key].widget.attrs['accept'] = '.txt'
-                    # add file_path string to the form and make it uneditable
-                    self.fields[f'file_path_{i}'] = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-                    self.initial[f'file_path_{i}'] = comp.file_path
 
-            # Add an id field for tracking updates
-            self.id_dict[f'{component.__name__}_id_{i}'] = comp.id
+            if f'{component.__name__}' not in self.id_dict:
+                self.id_dict[f'{component.__name__}'] = {}
+            self.id_dict[f'{component.__name__}'][i] = comp.id
 
     @transaction.atomic
-    def save_components(self, experiment, component_model, component_fields: dict[str, Any]):
-        if 'file' in component_fields:
-            # add file_path to component_fields
-            component_fields['file_path'] = forms.CharField
-        indices = set(int(field_name.split('_')[-1]) for field_name in self.cleaned_data if
-                      any(field_name.startswith(key) for key in component_fields.keys()))
+    def save_components(self, experiment, component_model, component_fields: dict[str, Any], create_new: bool):
+        print(component_model)
 
-        existing_ids = {c.id for c in component_model.objects.filter(experiment=experiment)}
+        form_component_ids = set([int(key.split('_')[-1]) for key in self.data if
+                                  any([key.startswith(f'{field_name}_') for field_name in component_fields])])
 
-        to_create: List[component_model] = []
-        to_update: List[component_model] = []
+        print(form_component_ids)
 
-        for i in indices:
-            defaults = {}
-            for field_name in component_fields.keys():
-                field_value = self.cleaned_data.get(f'{field_name}_{i}', None)
-                if field_value is not None:
-                    defaults[field_name] = field_value
+        new_components = []
+        updated_components = []
 
-            if not defaults:
-                continue
+        for i in form_component_ids:
+            comp = None
+            comp_id = self.id_dict[component_model.__name__].get(i)
+            if comp_id and not create_new:
+                comp = component_model.objects.filter(id=comp_id).first()
+            if not comp:
+                comp = component_model()
+                new_components.append(comp)
 
-            print(defaults)
+            for field_name, field_type in component_fields.items():
+                field_key = f'{field_name}_{i}'
+                if field_name == 'file':
+                    setattr(comp, field_name, self.cleaned_data[field_key])  # Todo: this only works for instances added initially
+                else:
+                    setattr(comp, field_name, self.data[field_key])
 
-            obj_id = self.id_dict.get(f"{component_model.__name__}_id_{i}", None)
-            if obj_id and obj_id in existing_ids:
-                obj = component_model.objects.get(id=obj_id)
-                for attr, value in defaults.items():
-                    setattr(obj, attr, value)
-                to_update.append(obj)
-            else:
-                to_create.append(component_model(experiment=experiment, **defaults))
+            # reassign the components from the most recent experiment to the new experiment
+            comp.experiment = experiment
 
-        if to_create:
-            component_model.objects.bulk_create(to_create)
+            if comp.id and comp not in updated_components and comp not in new_components:
+                updated_components.append(comp)
 
-        if to_update:
-            update_fields = list(component_fields.keys())
-            component_model.objects.bulk_update(to_update, update_fields)
+        component_model.objects.bulk_create(new_components)
+        print([field.name for field in component_model._meta.fields])
+        component_model.objects.bulk_update(updated_components, fields=[field.name for field in component_model._meta.fields if field.name != 'id'])
 
-    def save(self, commit=True):
+    def save(self, commit=True, create_new=False):
+        # print the request.FILES content
+        print(self.files)
+        # save request.FILES content to the MEDIA_ROOT
+        for file in self.files.values():
+            with open(f'{MEDIA_ROOT}/{file.name}', 'wb') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
+
         experiment = super().save(commit=False)
         if commit:
             experiment.save()
             # self.save_m2m()  # Save many-to-many data if any
 
         for component, component_fields in self.components.items():
-            self.save_components(experiment, component, component_fields)
+            self.save_components(experiment, component, component_fields, create_new)
 
         for text_document in experiment.experimenttextdocument_set.all():
             # if The 'file' attribute has a file associated with it
             if text_document.file:
-                # set file_path to path to the file
+                print('file', text_document.file.path)
+
                 text_document.file_path = text_document.file.path
-                # delete text_document.file
                 text_document.file = None
                 text_document.save()
+                pass
+            with open(text_document.file_path, 'r') as file:
+                text_document.file_content = file.read()
+            text_document.save()
+
+        if self.most_recent_experiment:
+            self.most_recent_experiment.delete()
 
         return experiment

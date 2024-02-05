@@ -11,8 +11,9 @@ class Experiment(models.Model):
 
 
 class ExperimentTextDocument(models.Model):
-    file = models.FileField(upload_to='uploads/', blank=True, null=True)
+    file = models.FileField(blank=True, null=True)
     file_path = models.CharField(max_length=100, blank=True, null=True)
+    file_content = models.TextField(blank=True, null=True)
     question = models.TextField()
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 

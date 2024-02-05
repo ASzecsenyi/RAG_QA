@@ -41,58 +41,58 @@
 </div>
 
 <script>
-    let indexCount = 0;
-
+    <!-- initialise with the value of the number input num_text_documents -->
+    let TextDocumentIndexCount = {{ form.id_dict.ExperimentTextDocument|length }};
+    let ChunkerIndexCount = {{ form.id_dict.ExperimentChunker|length }};
+    let RankerIndexCount = {{ form.id_dict.ExperimentRanker|length }};
+    let QAIndexCount = {{ form.id_dict.ExperimentQA|length }};
+    
     function addTextDocumentComponent() {
         const html = `
     <div class="mb-3">
         <hr> txt file
-        <input type="file"  name="file_${indexCount}" class="form-control mb-2" accept=".txt">
-        <input type="text" name="question_${indexCount}" placeholder="Question" class="form-control mb-2">
-        <input type="number" name="ExperimentTextDocument_id_${indexCount}">
+        <input type="file"  name="file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt">
+        <input type="text" name="question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2">
     </div>
   `;
         $('#componentsContainer').append(html);
-        indexCount++;
+        TextDocumentIndexCount++;
     }
 
     function addChunkerComponent() {
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="number" name="chunk_length_${indexCount}" placeholder="Chunk Length" class="form-control mb-2">
-        <input type="text" name="sliding_window_size_${indexCount}" placeholder="Sliding Window Size" class="form-control mb-2">
-        <input type="text" name="chunker_name_${indexCount}" placeholder="Chunker Name" class="form-control mb-2">
-        <input type="number" name="ExperimentChunker_id_${indexCount}">
+        <input type="number" name="chunk_length_${ChunkerIndexCount}" placeholder="Chunk Length" class="form-control mb-2">
+        <input type="text" name="sliding_window_size_${ChunkerIndexCount}" placeholder="Sliding Window Size" class="form-control mb-2">
+        <input type="text" name="chunker_name_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
     </div>
   `;
         $('#componentsContainer').append(html);
-        indexCount++;
+        ChunkerIndexCount++;
     }
 
     function addRankerComponent() {
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="number" name="top_k_${indexCount}" placeholder="Top K" class="form-control mb-2">
-        <input type="text" name="ranker_name_${indexCount}" placeholder="Ranker Name" class="form-control mb-2">
-        <input type="number" name="ExperimentRanker_id_${indexCount}">
+        <input type="number" name="top_k_${RankerIndexCount}" placeholder="Top K" class="form-control mb-2">
+        <input type="text" name="ranker_name_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
     </div>
   `;
         $('#componentsContainer').append(html);
-        indexCount++;
+        RankerIndexCount++;
     }
-
+    
     function addQAComponent() {
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="text" name="model_name_${indexCount}" placeholder="Model Name" class="form-control mb-2">
-        <input type="number" name="ExperimentQA_id_${indexCount}">
+        <input type="text" name="model_name_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
     </div>
   `;
         $('#componentsContainer').append(html);
-        indexCount++;
+        QAIndexCount++;
     }
 </script>
 
