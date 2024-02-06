@@ -4,7 +4,7 @@ from django import forms
 from django.db import transaction
 
 from rgqa_project.settings import MEDIA_ROOT
-from .models import Experiment, ExperimentTextDocument, ExperimentChunker, ExperimentRanker, ExperimentQA
+from .models import Experiment, ExperimentTextDocument, ExperimentNewsQaDocument, ExperimentChunker, ExperimentRanker, ExperimentQA
 
 
 class ExperimentForm(forms.ModelForm):
@@ -14,18 +14,30 @@ class ExperimentForm(forms.ModelForm):
             'file_path': forms.CharField,
             'question': forms.CharField,
         },
+        ExperimentNewsQaDocument: {
+            'story_id': forms.CharField,
+        },
         ExperimentChunker: {
+            'chunker_type': forms.ChoiceField,
             'chunk_length': forms.IntegerField,
             'sliding_window_size': forms.FloatField,
             'chunker_name': forms.CharField,
         },
         ExperimentRanker: {
+            'ranker_type': forms.ChoiceField,
             'top_k': forms.IntegerField,
             'ranker_name': forms.CharField,
         },
         ExperimentQA: {
+            'model_type': forms.ChoiceField,
             'model_name': forms.CharField,
         }
+    }
+
+    choice_fields = {
+        'chunker_type': ['CharChunker', 'SentChunker'],
+        'ranker_type': ['TfidfRanker', 'SentEmbeddingRanker', 'GuessSimilarityRanker'],
+        'model_type': ['MistralQA', 'GptQA', 'LlamaQA'],
     }
 
     class Meta:
@@ -38,7 +50,13 @@ class ExperimentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.id_dict = {}
+        self.id_dict = {
+            'ExperimentTextDocument': {},
+            'ExperimentNewsQaDocument': {},
+            'ExperimentChunker': {},
+            'ExperimentRanker': {},
+            'ExperimentQA': {},
+        }
 
         self.most_recent_experiment = Experiment.objects.last()
 
@@ -54,10 +72,10 @@ class ExperimentForm(forms.ModelForm):
 
     def init_component_fields(self, component, component_fields: dict[str, Any]):
         # get the components of the most recent experiment
-        components = component.objects.filter(experiment=self.most_recent_experiment) if self.most_recent_experiment else None
+        components = component.objects.filter(experiment=self.most_recent_experiment) if self.most_recent_experiment else []
 
-        if not components:
-            components = [component()]
+        # if not len(components):
+        #     components = [component()]
 
         for i, comp in enumerate(components):
             for field_name, field_type in component_fields.items():
@@ -67,13 +85,13 @@ class ExperimentForm(forms.ModelForm):
 
                 if field_name == 'file':
                     self.fields[field_key].widget.attrs['accept'] = '.txt'
+                if field_type == forms.ChoiceField:
+                    self.fields[field_key].choices = [(choice, choice) for choice in self.choice_fields[field_name]]
 
             # add a tick box to delete the component
             self.fields[f'delete_{component.__name__}_{i}'] = forms.BooleanField(required=False, label='Delete')
 
             # create a dictionary of the ids of the components
-            if f'{component.__name__}' not in self.id_dict:
-                self.id_dict[f'{component.__name__}'] = {}
             self.id_dict[f'{component.__name__}'][i] = comp.id
 
     @transaction.atomic
@@ -118,8 +136,6 @@ class ExperimentForm(forms.ModelForm):
         component_model.objects.bulk_update(updated_components, fields=[field.name for field in component_model._meta.fields if field.name != 'id'])
 
     def save(self, commit=True, create_new=False):
-        # print the request.FILES content
-        print(self.files)
         # save request.FILES content to the MEDIA_ROOT
         for file in self.files.values():
             with open(f'{MEDIA_ROOT}/{file.name}', 'wb') as destination:

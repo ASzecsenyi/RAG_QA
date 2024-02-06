@@ -66,9 +66,13 @@
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="number" name="chunk_length_${ChunkerIndexCount}" placeholder="Chunk Length" class="form-control mb-2">
-        <input type="text" name="sliding_window_size_${ChunkerIndexCount}" placeholder="Sliding Window Size" class="form-control mb-2">
-        <input type="text" name="chunker_name_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
+        <select name="chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
+            <option value="CharChunker" selected="">CharChunker</option>
+            <option value="SentChunker">SentChunker</option>
+        </select>
+        <input type="number" name="chunk_length_${ChunkerIndexCount}" value=200 placeholder="Chunk Length" class="form-control mb-2">
+        <input type="text" name="sliding_window_size_${ChunkerIndexCount}" value=0.3 placeholder="Sliding Window Size" class="form-control mb-2">
+        <input type="text" name="chunker_name_${ChunkerIndexCount}" value="chunker_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
         <input type="checkbox" class="deletable-component" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
     </div>
   `;
@@ -81,8 +85,13 @@
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="number" name="top_k_${RankerIndexCount}" placeholder="Top K" class="form-control mb-2">
-        <input type="text" name="ranker_name_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
+        <select name="ranker_type_${RankerIndexCount}"  class="form-select mb-2">
+            <option value="TfidfRanker" selected="">TfidfRanker</option>
+            <option value="SentEmbeddingRanker">SentEmbeddingRanker</option>
+            <option value="GuessSimilarityRanker">GuessSimilarityRanker</option>
+        </select>
+        <input type="number" name="top_k_${RankerIndexCount}" value=3 placeholder="Top K" class="form-control mb-2">
+        <input type="text" name="ranker_name_${RankerIndexCount}" value="ranker_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
         <input type="checkbox" class="deletable-component" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
     </div>
   `;
@@ -95,8 +104,12 @@
         const html = `
     <div class="mb-3">
         <hr>
-        <input type="text" name="model_name_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
-        <input type="text" name="tokenizer_name_${QAIndexCount}" placeholder="Tokenizer Name" class="form-control mb-2">
+        <select name="model_type_${QAIndexCount}" class="form-select mb-2">
+            <option value="MistralQA" selected="">MistralQA</option>
+            <option value="GptQA">GptQA</option>
+            <option value="LlamaQA">LlamaQA</option>
+        </select>
+        <input type="text" name="model_name_${QAIndexCount}" value="qa_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
         <input type="checkbox" class="deletable-component" name="delete_ExperimentQA_${QAIndexCount}" value="delete""> Delete
     </div>
   `;

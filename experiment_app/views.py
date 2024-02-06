@@ -1,14 +1,29 @@
 from django.shortcuts import render
 
-from experiments import answer_single_question
 from experiments.Experiment import Experiment
-from qa.MistralQA import MistralQA
-from retrieval.Chunker.CharChunker import CharChunker
-from retrieval.Ranker.TfidfRanker import TfidfRanker
 from data.TextDocument import TextDocument
+from data.NewsQaDocument import NewsQaDocument
+from retrieval.Chunker.CharChunker import CharChunker
+from retrieval.Chunker.SentChunker import SentChunker
+from retrieval.Ranker.TfidfRanker import TfidfRanker
+from retrieval.Ranker.SentEmbeddingRanker import SentEmbeddingRanker
+from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
+from qa.MistralQA import MistralQA
+from qa.LlamaQA import LlamaQA
+from qa.GptQA import GptQA
 
 from .forms import ExperimentForm
 
+evals = {
+    'CharChunker': CharChunker,
+    'SentChunker': SentChunker,
+    'TfidfRanker': TfidfRanker,
+    'SentEmbeddingRanker': SentEmbeddingRanker,
+    'GuessSimilarityRanker': GuessSimilarityRanker,
+    'MistralQA': MistralQA,
+    'GptQA': GptQA,
+    'LlamaQA': LlamaQA
+}
 
 # from .models import Experiment
 
@@ -20,24 +35,6 @@ def experiment_create_view(request):
         form = ExperimentForm(request.POST, request.FILES)
         if form.is_valid():
             experiment = form.save()
-            # text_document = experiment.experimenttextdocument_set.first()
-            # chunker_params = experiment.experimentchunker_set.first()
-            # ranker_params = experiment.experimentranker_set.first()
-            # qa_params = experiment.experimentqa_set.first()
-            #
-            # if all([text_document, chunker_params, ranker_params, qa_params]):
-            #     # text_document either has a file or a file_path
-            #     if text_document.file and False:
-            #         file_data = TextDocument(text_document.file.read().decode('utf-8'))
-            #     else:
-            #         with open(text_document.file_path, 'r') as file:
-            #             file_data = TextDocument(file.read())
-            #     chunker = CharChunker(chunk_length=chunker_params.chunk_length,
-            #                           sliding_window_size=chunker_params.sliding_window_size)
-            #     ranker = TfidfRanker(ranker_params.top_k)
-            #     qa = MistralQA(qa_params.model_name)
-            #
-            #     answer = answer_single_question(text_document.question, file_data, chunker, ranker, qa)
 
             datasets = []
 
@@ -48,18 +45,24 @@ def experiment_create_view(request):
                 )
                 datasets.append(file_data)
 
+            for news_qa_document in experiment.experimentnewsqadocument_set.all():
+                file_data = NewsQaDocument(news_qa_document.story_id)
+                datasets.append(file_data)
+
             chunkers = []
             for chunker_params in experiment.experimentchunker_set.all():
-                chunkers.append(CharChunker(chunk_length=chunker_params.chunk_length,
-                                            sliding_window_size=chunker_params.sliding_window_size))
+                chunkers.append(evals[chunker_params.chunker_type](
+                    chunk_length=chunker_params.chunk_length,
+                    sliding_window_size=chunker_params.sliding_window_size
+                ))
 
             rankers = []
             for ranker_params in experiment.experimentranker_set.all():
-                rankers.append(TfidfRanker(ranker_params.top_k))
+                rankers.append(evals[ranker_params.ranker_type](ranker_params.top_k))
 
             qas = []
             for qa_params in experiment.experimentqa_set.all():
-                qas.append(MistralQA(qa_params.model_name))
+                qas.append(evals[qa_params.model_type](qa_params.model_name))
 
             experiment_run = Experiment(
                 name=experiment.name,
@@ -70,16 +73,16 @@ def experiment_create_view(request):
                 qa=qas
             )
 
-            print(experiment_run)
+            # print(experiment_run)
 
             results = experiment_run.run()
 
             # print(results)
             first_result = results[list(results.keys())[0]]
             if len(first_result) > 0:
-                answer = first_result[0].get('answer', 'noans')
+                answer = first_result[0].get('answer', 'no ans')
             else:
-                answer = 'noansss'
+                answer = 'no ans 2'
 
     return render(request, 'experiment_app/experiment_create_view.html', {
         'form': ExperimentForm(),

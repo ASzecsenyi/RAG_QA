@@ -21,7 +21,17 @@ class ExperimentTextDocument(models.Model):
         db_table = 'ExperimentTextDocument'
 
 
+class ExperimentNewsQaDocument(models.Model):
+    story_id = models.CharField(max_length=100, blank=True, null=True)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'ExperimentNewsQaDocument'
+
+
 class ExperimentChunker(models.Model):
+    # drop down menu for chunker_type: CharChunker, SentChunker
+    chunker_type = models.CharField(max_length=100, blank=True, null=True)
     chunk_length = models.IntegerField(blank=True, null=True)
     sliding_window_size = models.FloatField(blank=True, null=True)
     chunker_name = models.CharField(max_length=100, blank=True, null=True)
@@ -32,6 +42,8 @@ class ExperimentChunker(models.Model):
 
 
 class ExperimentRanker(models.Model):
+    # drop down menu for ranker_type: TfidfRanker, SentEmbeddingRanker, GuessSimilarityRanker
+    ranker_type = models.CharField(max_length=100, blank=True, null=True)
     top_k = models.IntegerField(blank=True, null=True)
     ranker_name = models.CharField(max_length=100, blank=True, null=True)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -41,6 +53,7 @@ class ExperimentRanker(models.Model):
 
 
 class ExperimentQA(models.Model):
+    model_type = models.CharField(max_length=100, blank=True, null=True)
     model_name = models.CharField(max_length=100, blank=True, null=True)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
