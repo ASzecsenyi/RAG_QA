@@ -84,7 +84,12 @@ def experiment_create_view(request):
             else:
                 answer = 'no ans 2'
 
+    form = ExperimentForm()
+
+    grouped_fields = form.group_component_fields()
+
     return render(request, 'experiment_app/experiment_create_view.html', {
-        'form': ExperimentForm(),
+        'form': form,
         'answer': answer,
+        'grouped_fields': grouped_fields
     })

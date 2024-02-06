@@ -79,7 +79,7 @@ class ExperimentForm(forms.ModelForm):
 
         for i, comp in enumerate(components):
             for field_name, field_type in component_fields.items():
-                field_key = f'{field_name}_{i}'
+                field_key = f'{component.__name__}_{field_name}_{i}'
                 self.fields[field_key] = field_type(required=False)
                 self.initial[field_key] = getattr(comp, field_name, None)
 
@@ -99,9 +99,7 @@ class ExperimentForm(forms.ModelForm):
         print(component_model)
 
         form_component_ids = set([int(key.split('_')[-1]) for key in self.data if
-                                  any([key.startswith(f'{field_name}_') for field_name in component_fields])])
-
-        print(form_component_ids)
+                                  any([key.startswith(f'{component_model.__name__}_{field_name}_') for field_name in component_fields])])
 
         new_components = []
         updated_components = []
@@ -119,7 +117,7 @@ class ExperimentForm(forms.ModelForm):
                 new_components.append(comp)
 
             for field_name, field_type in component_fields.items():
-                field_key = f'{field_name}_{i}'
+                field_key = f'{component_model.__name__}_{field_name}_{i}'
                 if field_name == 'file':
                     setattr(comp, field_name, self.cleaned_data[field_key])
                 else:
@@ -177,3 +175,41 @@ class ExperimentForm(forms.ModelForm):
             cleaned_data[key] = file
 
         return cleaned_data
+
+    def group_component_fields(self) -> dict[str, List[tuple[str, Any]]]:
+        grouped_fields = {
+            'ExperimentTextDocument': [],
+            'ExperimentChunker': [],
+            'ExperimentRanker': [],
+            'ExperimentQA': [],
+        }
+
+        for name, field in self.fields.items():
+            if name.startswith('delete_'):
+                # Splitting to identify the component type and index
+                _, component_type, index = name.split('_')
+                if component_type == 'ExperimentNewsQaDocument':
+                    component_type = 'ExperimentTextDocument'
+                # Initialize dict for this index if not already done
+                if not any(d['index'] == index for d in grouped_fields[component_type]):
+                    grouped_fields[component_type].append({'index': index, 'fields': []})
+
+                # Find the dict for this index and append the field
+                for component_dict in grouped_fields[component_type]:
+                    if component_dict['index'] == index:
+                        component_dict['fields'].append((name, field))
+            else:
+                for component_type in ['ExperimentTextDocument', 'ExperimentChunker', 'ExperimentRanker',
+                                       'ExperimentQA']:
+                    if component_type in name:
+                        index = name.split('_')[-1]
+                        found = False
+                        for component_dict in grouped_fields[component_type]:
+                            if component_dict['index'] == index:
+                                component_dict['fields'].append((name, field))
+                                found = True
+                                break
+                        if not found:
+                            grouped_fields[component_type].append({'index': index, 'fields': [(name, field)]})
+
+        return grouped_fields
