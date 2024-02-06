@@ -7,7 +7,7 @@ from datasets import load_dataset
 
 import pandas as pd
 
-newsqa = load_dataset('newsqa', data_dir='../data/files')
+newsqa = load_dataset('newsqa', data_dir='data/files')
 
 
 class NewsQaDocument(Document):

@@ -8,7 +8,7 @@ from retrieval.Ranker import Ranker
 
 
 class SentEmbeddingRanker(Ranker):
-    def __init__(self, top_k: int, **kwargs):
+    def __init__(self, top_k: int):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
@@ -18,7 +18,7 @@ class SentEmbeddingRanker(Ranker):
         """
         super().__init__(top_k)
         self.index = None
-        self.name += f"_{kwargs}"
+        self.name += "_sent_embedding"
         self.vectors = None
 
         device = "cuda" if torch.cuda.is_available() else "cpu"

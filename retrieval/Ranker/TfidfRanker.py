@@ -10,9 +10,13 @@ from nltk.stem import PorterStemmer
 
 from retrieval.Ranker import Ranker
 
-nltk.download('stopwords')
-# nltk.download('punkt')
-# nltk.download('wordnet')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+# if not nltk.data.find('corpora/wordnet'):
+#    nltk.download('wordnet')
 
 
 class TfidfRanker(Ranker):
