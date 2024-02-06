@@ -61,11 +61,16 @@ class GuessSimilarityRanker(Ranker):
         _, indices = self.index.search(query_arr, len(self.chunks))
         ranks = [[self.chunks[i] for i in indices[j]] for j in range(len(answers))]
         # calculate mean similarity for each chunk per answer
-        ranks = [[np.mean([np.inner(query_vectors[j], self.model.encode([chunk])[0]) for chunk in rank])] for j, rank in enumerate(ranks)]
+        ranks = [
+            [(np.mean([np.inner(query_vectors[j], self.model.encode([chunk])[0]) for chunk in rank]), i) for i, rank in
+             enumerate(ranks) for j in range(len(query_vectors))]]
         # sort by mean similarity
-        ranks = [list(np.array(ranks).argsort(axis=0).flatten())]
+        ranks = [sorted(rank, key=lambda x: x[0]) for rank in ranks]
+        # get the sorted indices
+        ranks = [[index for _, index in rank] for rank in ranks]
+        # get the top k chunks
 
-        return [self.chunks[i] for i in ranks[0]]
+        return [self.chunks[i] for i in ranks[0]][-self.top_k:]
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
@@ -94,6 +99,9 @@ class GuessSimilarityRanker(Ranker):
         response_str = response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
 
         r_list = response_str.split(";\n")
+
+        if len(r_list) == 1:
+            r_list = r_list[0].split("\n")
 
         if len(r_list) < self.num_of_paraphrases:
             r_list += ["MASK"] * (self.num_of_paraphrases - len(r_list))
