@@ -68,6 +68,10 @@ class ExperimentForm(forms.ModelForm):
                 if field_name == 'file':
                     self.fields[field_key].widget.attrs['accept'] = '.txt'
 
+            # add a tick box to delete the component
+            self.fields[f'delete_{component.__name__}_{i}'] = forms.BooleanField(required=False, label='Delete')
+
+            # create a dictionary of the ids of the components
             if f'{component.__name__}' not in self.id_dict:
                 self.id_dict[f'{component.__name__}'] = {}
             self.id_dict[f'{component.__name__}'][i] = comp.id
@@ -85,6 +89,9 @@ class ExperimentForm(forms.ModelForm):
         updated_components = []
 
         for i in form_component_ids:
+            if self.cleaned_data.get(f'delete_{component_model.__name__}_{i}'):
+                component_model.objects.filter(id=self.id_dict[component_model.__name__].get(i)).delete()
+                continue
             comp = None
             comp_id = self.id_dict[component_model.__name__].get(i)
             if comp_id and not create_new:
@@ -96,7 +103,7 @@ class ExperimentForm(forms.ModelForm):
             for field_name, field_type in component_fields.items():
                 field_key = f'{field_name}_{i}'
                 if field_name == 'file':
-                    setattr(comp, field_name, self.cleaned_data[field_key])  # Todo: this only works for instances added initially
+                    setattr(comp, field_name, self.cleaned_data[field_key])
                 else:
                     setattr(comp, field_name, self.data[field_key])
 
