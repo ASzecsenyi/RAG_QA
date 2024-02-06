@@ -23,5 +23,5 @@ app_name = 'experiment_app'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('upload/', experiment_create_view, name='experiment_create_view'),
+    path('', experiment_create_view, name='experiment_create_view'),
 ]
