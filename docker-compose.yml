@@ -5,6 +5,7 @@ services:
     build: .
     environment:
       HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     command: python /code/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
