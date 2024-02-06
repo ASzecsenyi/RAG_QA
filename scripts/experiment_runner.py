@@ -1,10 +1,12 @@
 from data.NewsQaDocument import NewsQaDocument
 from data.UXDocument import UXDocument, chapters
+# from data.TextDocument import TextDocument
 from experiments.Experiment import Experiment
 from qa.MistralQA import MistralQA
 from qa.GptQA import GptQA
 from qa.LlamaQA import LlamaQA
 from retrieval.Chunker.CharChunker import CharChunker
+from retrieval.Chunker.SentChunker import SentChunker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
 from retrieval.Ranker.SentEmbeddingRanker import SentEmbeddingRanker
 from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
@@ -13,9 +15,9 @@ import json
 
 
 # document = NewsQaDocument(name="newsqa_1", story_id='./cnn/stories/289a45e715707cf650352f3eaa123f85d3653d4b.story')
-# document2 = NewsQaDocument(name="newsqa_2", story_id='./cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story')
+document2 = NewsQaDocument(name="newsqa_2", story_id='./cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story')
 # document3 = NewsQaDocument(name="newsqa_3", story_id='./cnn/stories/017df5c4fe1e79eb26957ff6a8b4c1e41cd966ac.story')
-# documents = [UXDocument(name=f"ux_{chapter}", chapter=chapter) for chapter in chapters]
+documents = [UXDocument(name=f"ux_{chapter}", chapter=chapter) for chapter in chapters]
 document = UXDocument()
 
 # all_documents = NewsQaDocument.all_documents()
