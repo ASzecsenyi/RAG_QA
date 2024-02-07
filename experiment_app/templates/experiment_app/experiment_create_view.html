@@ -10,65 +10,123 @@
     <title>RAG QA</title>
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .card-wrapper {
+            position: relative; /* This makes the absolute positioning of the card relative to this wrapper */
+            height: 50px; /* Initial height of the compact card */
+        }
+
+        .card.compact .card-body {
+            display: none; /* Hide the body initially */
+        }
+
+        .card.compact {
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: initial;
+            z-index: 1; /* Ensure it's above base items but below expanded items */
+        }
+
+        .card.compact:hover {
+            z-index: 1050; /* Bootstrap modal z-index starts at 1050, ensure it's on top */
+            position: fixed; /* Ensure it doesn't move other components */
+            height: auto; /* Let it expand to natural height */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better focus */
+        }
+
+        .card.compact:hover ~ * {
+            filter: blur(4px); /* Adjust blur as necessary */
+        }
+
+        .container:hover {
+            filter: none;
+        }
+
+        .container * {
+            transition: filter 0.3s ease;
+        }
+
+        .card.compact:hover .card-body {
+            display: block; /* Show the body on hover */
+        }
+
+        .component-title {
+            padding: 10px; /* Adjust as per your styling needs */
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-5">
     <h1>RAG QA</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <!-- Display the basic form fields -->
-        <div class="mb-3">
-            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
-            {{ form.name }}
-            {% if form.name.errors %}
-                <div class="alert alert-danger">{{ form.name.errors.as_text }}</div>
-            {% endif %}
+    <div class="row">
+        <div class="col">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Display the basic form fields -->
+                <div class="mb-3">
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="alert alert-danger">{{ form.name.errors.as_text }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Container for dynamically added components in columns -->
+                <div id="componentsContainer" class="row">
+                    {% for class, components in grouped_fields.items %}
+                        <div id="{{ class }}" class="col">
+                            <h3>{{ class|slice:"10:" }}</h3>
+                            <!-- Dynamically render existing components -->
+                            {% for component in components %}
+                                <div class="card-wrapper">
+                                    <div class="card mb-3 compact">
+                                        <div class="card-header component-title">{{ class }}</div>
+                                        <div class="card-body">
+                                            {% for field_name, field in component.fields %}
+                                                <div class="form-group
+                                    {% if field.errors %} has-error{% endif %}">
+                                                    {% for field in form %}
+                                                        {% if field_name in field.name %}
+                                                            {{ field.errors }}
+                                                            {{ field }} {% if 'delete' in field.name %}Delete{% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Buttons to add new component of each type -->
+                <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document
+                </button>
+                <button type="button" onclick="addNewsQADocumentComponent()" class="btn btn-info">Add NewsQA Document
+                </button>
+                <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
+                <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
+                <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
         </div>
 
-        <!-- Container for dynamically added components in columns -->
-        <div id="componentsContainer" class="row">
-        {% for class, components in grouped_fields.items %}
-            <div id="{{ class }}" class="col">
-                <h3>{{ class|slice:"10:" }}</h3>
-                <!-- Dynamically render existing components -->
-                {% for component in components %}
-                    <div class="mb-3">
-                        <hr>
-                        {% for field_name, field in component.fields %}
-                            <div class="form-group
-                                {% if field.errors %} has-error{% endif %}">
-                                {% for field in form %}
-                                    {% if field_name in field.name %}
-                                        {{ field.errors }}
-                                        {{ field }}
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
+        <div class="col-3">
+            <div id="answer" class="container mt-5">
+                <!-- if the answer is not the empty string: -->
+                {% if answer %}
+                    <h2>Answer:</h2>
+                    <p>{{ answer }}</p>
+                    <h2>Context:</h2>
+                    <p>{{ context }}</p>
+                {% endif %}
             </div>
-        {% endfor %}
         </div>
 
-        <!-- Buttons to add new component of each type -->
-        <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document</button>
-        <button type="button" onclick="addNewsQADocumentComponent()" class="btn btn-info">Add NewsQA Document</button>
-        <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
-        <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
-        <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-
-    <div id="answer" class="container mt-5">
-        <!-- if the answer is not the empty string: -->
-        {% if answer %}
-            <h2>Answer:</h2>
-            <p>{{ answer }}</p>
-            <h2>Context:</h2>
-            <p>{{ context }}</p>
-        {% endif %}
     </div>
 
 </div>
@@ -83,25 +141,33 @@
 
     function addTextDocumentComponent() {
         const html = `
-    <div class="mb-3">
-        <hr> txt file
-        <input type="file"  name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt">
-        <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2">
-        <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2">
-        <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
+    <div class="card-wrapper">
+        <div class="card mb-3 compact">
+            <div class="card-header component-title">Text Document ${TextDocumentIndexCount + 1}</div>
+            <div class="card-body">
+                <input type="file"  name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt">
+                <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2">
+                <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2">
+                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
+            </div>
+        </div>
     </div>
   `;
         $('#ExperimentTextDocument').append(html);
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         TextDocumentIndexCount++;
     }
-    
+
     function addNewsQADocumentComponent() {
         const html = `
-    <div class="mb-3">
-        <hr> txt file
-        <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2">
-        <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
+    <div class="card-wrapper">
+        <div class="card mb-3 compact">
+            <div class="card-header component-title">NewsQA Document ${NewsQADocumentIndexCount + 1}</div>
+            <div class="card-body">
+                <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2">
+                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
+            </div>
+        </div>
     </div>
   `;
         $('#ExperimentTextDocument').append(html);
@@ -111,16 +177,20 @@
 
     function addChunkerComponent() {
         const html = `
-    <div class="mb-3">
-        <hr>
-        <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
-            <option value="CharChunker" selected="">CharChunker</option>
-            <option value="SentChunker">SentChunker</option>
-        </select>
-        <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" value=200 placeholder="Chunk Length" class="form-control mb-2">
-        <input type="text" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" value=0.3 placeholder="Sliding Window Size" class="form-control mb-2">
-        <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" value="chunker_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
-        <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
+    <div class="card-wrapper">
+        <div class="card mb-3 compact">
+            <div class="card-header component-title">Chunker ${ChunkerIndexCount + 1}</div>
+            <div class="card-body">
+                <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
+                    <option value="CharChunker" selected="">CharChunker</option>
+                    <option value="SentChunker">SentChunker</option>
+                </select>
+                <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" value=200 placeholder="Chunk Length" class="form-control mb-2">
+                <input type="text" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" value=0.3 placeholder="Sliding Window Size" class="form-control mb-2">
+                <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" value="chunker_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
+                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
+            </div>
+        </div>
     </div>
   `;
         $('#ExperimentChunker').append(html);
@@ -130,16 +200,20 @@
 
     function addRankerComponent() {
         const html = `
-    <div class="mb-3">
-        <hr>
-        <select name="ExperimentRanker_ranker_type_${RankerIndexCount}"  class="form-select mb-2">
-            <option value="TfidfRanker" selected="">TfidfRanker</option>
-            <option value="SentEmbeddingRanker">SentEmbeddingRanker</option>
-            <option value="GuessSimilarityRanker">GuessSimilarityRanker</option>
-        </select>
-        <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" value=3 placeholder="Top K" class="form-control mb-2">
-        <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" value="ranker_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
-        <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
+    <div class="card-wrapper">
+        <div class="card mb-3 compact">
+            <div class="card-header component-title">Ranker ${RankerIndexCount + 1}</div>
+            <div class="card-body">
+                <select name="ExperimentRanker_ranker_type_${RankerIndexCount}"  class="form-select mb-2">
+                    <option value="TfidfRanker" selected="">TfidfRanker</option>
+                    <option value="SentEmbeddingRanker">SentEmbeddingRanker</option>
+                    <option value="GuessSimilarityRanker">GuessSimilarityRanker</option>
+                </select>
+                <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" value=3 placeholder="Top K" class="form-control mb-2">
+                <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" value="ranker_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
+                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
+            </div>
+        </div>
     </div>
   `;
         $('#ExperimentRanker').append(html);
@@ -149,15 +223,17 @@
 
     function addQAComponent() {
         const html = `
-    <div class="mb-3">
-        <hr>
-        <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
-            <option value="MistralQA" selected="">MistralQA</option>
-            <option value="GptQA">GptQA</option>
-            <option value="LlamaQA">LlamaQA</option>
-        </select>
-        <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" value="qa_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
-        <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
+    <div class="card mb-3 compact">
+        <div class="card-header component-title">QA ${QAIndexCount + 1}</div>
+        <div class="card-body">
+            <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
+                <option value="MistralQA" selected="">MistralQA</option>
+                <option value="GptQA">GptQA</option>
+                <option value="LlamaQA">LlamaQA</option>
+            </select>
+            <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" value="qa_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
+            <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
+        </div>
     </div>
   `;
         $('#ExperimentQA').append(html);
@@ -167,7 +243,7 @@
 
     function deleteComponent() {
         console.log('deleteComponent');
-        $(this).closest('div.mb-3').remove();
+        $(this).closest('.card-wrapper').remove();
     }
 
     $(document).ready(function () {
