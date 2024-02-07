@@ -11,6 +11,22 @@
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
+        .button-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 0;
+            background-color: #f8f9fa; /* Light gray background, or choose your own */
+            border-top: 1px solid #dee2e6; /* Adds a subtle border on top for separation */
+            text-align: center;
+            z-index: 1000; /* Ensures it's above most other elements */
+        }
+
+        .container {
+            padding-bottom: 100px; /* Adjust this value based on your button container's height to ensure it doesn't overlap content */
+        }
+
         .card-wrapper {
             position: relative; /* This makes the absolute positioning of the card relative to this wrapper */
             height: 50px; /* Initial height of the compact card */
@@ -101,17 +117,19 @@
                         </div>
                     {% endfor %}
                 </div>
+                <div class="text-center mt-4 button-container">
+                    <!-- Buttons to add new component of each type -->
+                    <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document
+                    </button>
+                    <button type="button" onclick="addNewsQADocumentComponent()" class="btn btn-info">Add NewsQA
+                        Document
+                    </button>
+                    <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
+                    <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
+                    <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
 
-                <!-- Buttons to add new component of each type -->
-                <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document
-                </button>
-                <button type="button" onclick="addNewsQADocumentComponent()" class="btn btn-info">Add NewsQA Document
-                </button>
-                <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
-                <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
-                <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
-
-                <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </form>
         </div>
 
