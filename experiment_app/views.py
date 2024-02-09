@@ -88,8 +88,11 @@ def experiment_create_view(request):
 
     grouped_fields = form.group_component_fields()
 
+    initial_data = form.get_initial_components_data()
+
     return render(request, 'experiment_app/experiment_create_view.html', {
         'form': form,
         'answer': answer,
-        'grouped_fields': grouped_fields
+        'grouped_fields': grouped_fields,
+        'initial_data': initial_data
     })

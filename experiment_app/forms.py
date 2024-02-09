@@ -213,3 +213,20 @@ class ExperimentForm(forms.ModelForm):
                             grouped_fields[component_type].append({'index': index, 'fields': [(name, field)]})
 
         return grouped_fields
+
+    def get_initial_components_data(self):
+        initial_components_data = {'components': []}
+
+        # Iterate through the id_dict to get IDs and types of existing components
+        for component_type, ids in self.id_dict.items():
+            for i, id in ids.items():
+                component_data = {'type': component_type, 'data': {}, 'id': id}
+                for name, field in self.fields.items():
+                    # Make sure to only include fields for the current component ID, and not include file fields
+                    if name.startswith(component_type) and name.endswith(str(i)) and ('file' not in name or 'file_path' in name):
+                        # Extract the field name without the component type and ID
+                        field_key = "_".join(name.split('_')[1:-1])
+                        component_data['data'][field_key] = self.initial.get(name, '')
+                initial_components_data['components'].append(component_data)
+
+        return initial_components_data

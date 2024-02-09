@@ -7,9 +7,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
+
     <title>RAG QA</title>
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <style>
         .button-container {
             position: fixed;
@@ -29,7 +31,8 @@
 
         .card-wrapper {
             position: relative; /* This makes the absolute positioning of the card relative to this wrapper */
-            height: 50px; /* Initial height of the compact card */
+            height: 40px; /* Initial height of the compact card */
+            margin-bottom: 10px; /* Spacing between cards */
         }
 
         .card.compact .card-body {
@@ -70,10 +73,21 @@
             padding: 10px; /* Adjust as per your styling needs */
             font-weight: bold;
         }
+
+        @keyframes wobble-animation {
+            0% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .wobble-effect {
+            animation: wobble-animation 0.2s ease-in-out;
+        }
     </style>
 </head>
 <body>
 <div class="container mt-5">
+    {{ initial_data|json_script:"initial-data" }}
     <h1>RAG QA</h1>
     <div class="row">
         <div class="col">
@@ -93,27 +107,7 @@
                     {% for class, components in grouped_fields.items %}
                         <div id="{{ class }}" class="col">
                             <h3>{{ class|slice:"10:" }}</h3>
-                            <!-- Dynamically render existing components -->
-                            {% for component in components %}
-                                <div class="card-wrapper">
-                                    <div class="card mb-3 compact">
-                                        <div class="card-header component-title">{{ class }}</div>
-                                        <div class="card-body">
-                                            {% for field_name, field in component.fields %}
-                                                <div class="form-group
-                                    {% if field.errors %} has-error{% endif %}">
-                                                    {% for field in form %}
-                                                        {% if field_name in field.name %}
-                                                            {{ field.errors }}
-                                                            {{ field.label }}{{ field }} {% if 'delete' in field.name %}Delete{% endif %}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
+
                         </div>
                     {% endfor %}
                 </div>
@@ -151,12 +145,12 @@
 
 <script>
     <!-- initialise with the value of the number input num_text_documents -->
-    let TextDocumentIndexCount = {{ form.id_dict.ExperimentTextDocument|length }};
-    let NewsQADocumentIndexCount = {{ form.id_dict.ExperimentNewsQADocument|length }};
-    let ChunkerIndexCount = {{ form.id_dict.ExperimentChunker|length }};
-    let RankerIndexCount = {{ form.id_dict.ExperimentRanker|length }};
-    let QAIndexCount = {{ form.id_dict.ExperimentQA|length }};
-    
+    let TextDocumentIndexCount = 0;
+    let NewsQADocumentIndexCount = 0;
+    let ChunkerIndexCount = 0;
+    let RankerIndexCount = 0;
+    let QAIndexCount = 0;
+
     let defaultValues = {
         Chunker: {
             CharChunker: {
@@ -204,35 +198,38 @@
     };
 
     function addTextDocumentComponent(componentData = null) {
-    let fileName = componentData ? componentData.fileName : '';
-    let filePath = componentData ? componentData.filePath : '';
-    let question = componentData ? componentData.question : '';
+        let fileName = componentData ? componentData.fileName : '';
+        let file_path = componentData ? componentData.file_path : '';
+        let question = componentData ? componentData.question : '';
 
-    const html = `
-        <div class="card-wrapper">
-            <div class="card mb-3 compact">
-                <div class="card-header component-title">Text Document ${TextDocumentIndexCount + 1}</div>
-                <div class="card-body">
-                    <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
-                    <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2" value="${filePath}">
-                    <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2" value="${question}">
-                    <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
+        const html = `
+            <div class="card-wrapper">
+                <div class="card mb-3 compact">
+                    <div class="card-header component-title">Text Document ${TextDocumentIndexCount + 1}</div>
+                    <div class="card-body">
+                        <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
+                        <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2" value="${file_path}">
+                        <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2" value="${question}">
+                        <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
-    $('#ExperimentTextDocument').append(html);
-    TextDocumentIndexCount++;
-}
+        `;
+        $('#ExperimentTextDocument').append(html);
+        $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
+        TextDocumentIndexCount++;
+    }
 
-    function addNewsQADocumentComponent() {
+    function addNewsQADocumentComponent(componentData = null) {
+        let story_id = componentData ? componentData.story_id : '';
+
         const html = `
     <div class="card-wrapper">
         <div class="card mb-3 compact">
             <div class="card-header component-title">NewsQA Document ${NewsQADocumentIndexCount + 1}</div>
             <div class="card-body">
-                <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2">
-                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
+                <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2" value="${story_id}">
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
             </div>
         </div>
     </div>
@@ -242,20 +239,25 @@
         NewsQADocumentIndexCount++;
     }
 
-    function addChunkerComponent() {
+    function addChunkerComponent(componentData = null) {
+        let chunker_type = componentData ? componentData.chunker_type : 'CharChunker';
+        let chunk_length = componentData ? componentData.chunk_length : 200;
+        let sliding_window_size = componentData ? componentData.sliding_window_size : 0.1;
+        let chunker_name = componentData ? componentData.chunker_name : `chunker_${ChunkerIndexCount}`;
+
         const html = `
     <div class="card-wrapper">
         <div class="card mb-3 compact">
             <div class="card-header component-title">Chunker ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
                 <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
-                    <option value="CharChunker" selected="">CharChunker</option>
-                    <option value="SentChunker">SentChunker</option>
+                    <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
+                    <option value="SentChunker" ${chunker_type==='SentChunker' ? 'selected=""' : '' }>SentChunker</option>
                 </select>
-                <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" value=200 placeholder="Chunk Length" class="form-control mb-2">
-                <input type="text" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" value=0.3 placeholder="Sliding Window Size" class="form-control mb-2">
-                <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" value="chunker_${ChunkerIndexCount}" placeholder="Chunker Name" class="form-control mb-2">
-                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
+                <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" value=${chunk_length} placeholder="Chunk Length" class="form-control mb-2">
+                <input type="text" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" value=${sliding_window_size} placeholder="Sliding Window Size" class="form-control mb-2">
+                <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" value="${chunker_name}" placeholder="Chunker Name" class="form-control mb-2">
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
             </div>
         </div>
     </div>
@@ -265,20 +267,24 @@
         ChunkerIndexCount++;
     }
 
-    function addRankerComponent() {
+    function addRankerComponent(componentData = null) {
+        let ranker_type = componentData ? componentData.ranker_type : 'TfidfRanker';
+        let top_k = componentData ? componentData.top_k : 4;
+        let ranker_name = componentData ? componentData.ranker_name : `ranker_${RankerIndexCount}`;
+
         const html = `
     <div class="card-wrapper">
         <div class="card mb-3 compact">
             <div class="card-header component-title">Ranker ${RankerIndexCount + 1}</div>
             <div class="card-body">
                 <select name="ExperimentRanker_ranker_type_${RankerIndexCount}"  class="form-select mb-2">
-                    <option value="TfidfRanker" selected="">TfidfRanker</option>
-                    <option value="SentEmbeddingRanker">SentEmbeddingRanker</option>
-                    <option value="GuessSimilarityRanker">GuessSimilarityRanker</option>
+                    <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
+                    <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
+                    <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
                 </select>
-                <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" value=3 placeholder="Top K" class="form-control mb-2">
-                <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" value="ranker_${RankerIndexCount}" placeholder="Ranker Name" class="form-control mb-2">
-                <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
+                <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" value=${top_k} placeholder="Top K" class="form-control mb-2">
+                <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" value="${ranker_name}" placeholder="Ranker Name" class="form-control mb-2">
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
             </div>
         </div>
     </div>
@@ -288,18 +294,23 @@
         RankerIndexCount++;
     }
 
-    function addQAComponent() {
+    function addQAComponent(componentData = null) {
+        let model_type = componentData ? componentData.model_type : 'MistralQA';
+        let model_name = componentData ? componentData.model_name : `qa_${QAIndexCount}`;
+
         const html = `
-    <div class="card mb-3 compact">
-        <div class="card-header component-title">QA ${QAIndexCount + 1}</div>
-        <div class="card-body">
-            <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
-                <option value="MistralQA" selected="">MistralQA</option>
-                <option value="GptQA">GptQA</option>
-                <option value="LlamaQA">LlamaQA</option>
-            </select>
-            <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" value="qa_${QAIndexCount}" placeholder="Model Name" class="form-control mb-2">
-            <input type="checkbox" class="deletable-component form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
+    <div class="card-wrapper">
+        <div class="card mb-3 compact">
+            <div class="card-header component-title">QA ${QAIndexCount + 1}</div>
+            <div class="card-body">
+                <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
+                    <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
+                    <option value="GptQA" ${model_type==='GptQA' ? 'selected=""' : '' }>GptQA</option>
+                    <option value="LlamaQA" ${model_type==='LlamaQA' ? 'selected=""' : '' }>LlamaQA</option>
+                </select>
+                <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" value="${model_name}" placeholder="Model Name" class="form-control mb-2">
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
+            </div>
         </div>
     </div>
   `;
@@ -311,8 +322,35 @@
     function deleteComponent() {
         $(this).closest('.card-wrapper').remove();
     }
-    
-    
+
+    document.addEventListener("DOMContentLoaded", function() {
+    const initialData = JSON.parse(document.getElementById('initial-data').textContent)['components'];
+    console.log(initialData);
+    initialData.forEach(component => {
+        switch(component.type) {
+                case 'ExperimentTextDocument':
+                    console.log(component.data);
+                    addTextDocumentComponent(component.data);
+                    break;
+
+                case 'ExperimentNewsQADocument':
+                    addNewsQADocumentComponent(component.data);
+                    break;
+
+                case 'ExperimentChunker':
+                    addChunkerComponent(component.data);
+                    break;
+
+                case 'ExperimentRanker':
+                    addRankerComponent(component.data);
+                    break;
+
+                case 'ExperimentQA':
+                    addQAComponent(component.data);
+                    break;
+            }
+    });
+});
 
     $(document).ready(function () {
         // For existing elements, update their classes
@@ -321,34 +359,60 @@
         $('input[type="select"]').addClass('form-select mb-2');
         $('label').addClass('form-check-label');
 
-        // Your existing functions to add components go here
-        $(document).on('wheel', '.form-select', function(e) {
-        
-            let select = $(this);
-                let selectedIndex = select.prop('selectedIndex');
-                let scrollDirection = e.originalEvent.deltaY;
-        
-                if (scrollDirection < 0) {
-                    // Scroll up
-                    if (selectedIndex > 0) {
-                        select.prop('selectedIndex', selectedIndex - 1).change();
-                    }
-                } else {
-                    // Scroll down
-                    if (selectedIndex < select.children('option').length - 1) {
-                        select.prop('selectedIndex', selectedIndex + 1).change();
-                    }
+         $('#componentsContainer .col').each(function() {
+            $(this).sortable({
+                items: ".card-wrapper",
+                axis: 'y',
+                containment: 'parent',
+                cursor: 'move',
+                opacity: 0.6,
+                helper: function(e, ui) {
+                    // Create a clone of the element being dragged
+                    var clone = ui.clone();
+                    clone.css('position', 'absolute');
+                    return clone.get(0);
+                },
+                update: function(event, ui) {
+                    console.log("Order updated within the column.");
                 }
-        
-                // Prevent page from scrolling
-                // e.preventDefault();
+            }).disableSelection();
         });
-            
+
+        // Your existing functions to add components go here
+        $(document).on('wheel', '.card', function(e) {
+              // Find the select element within the card
+              let select = $(this).find('.form-select');
+
+              // If there's no select element, don't do anything
+              if (select.length === 0) {
+                return;
+              }
+
+              let selectedIndex = select.prop('selectedIndex');
+              let scrollDirection = e.originalEvent.deltaY;
+
+              if (scrollDirection < 0) {
+                  // Scroll up
+                  if (selectedIndex > 0) {
+                      select.prop('selectedIndex', selectedIndex - 1).change();
+                  }
+              } else {
+                  // Scroll down
+                  if (selectedIndex < select.children('option').length - 1) {
+                      select.prop('selectedIndex', selectedIndex + 1).change();
+                  }
+              }
+
+              // Prevent page from scrolling if there's a select element to scroll through
+              // Comment this out if you want the whole page to scroll normally
+              e.preventDefault();
+          });
+
         $(document).on('change', '.form-select', function() {
             let select = $(this);
             let selectedValue = select.val();
             let index = select.attr('name').match(/\d+$/)[0];
-            
+
             const componentMapping = {
                 Chunker: {
                     match: select.attr('name').match(/Chunker_(.+)_\d+/),
@@ -366,61 +430,71 @@
                     prefix: 'ExperimentQA',
                 },
             };
-        
+
             Object.keys(componentMapping).forEach((compType) => {
                 let comp = componentMapping[compType];
                 if (comp.match && comp.match[1] === compType.toLowerCase() + '_type') {
                     if (!customValues[compType][index]) {
                         customValues[compType][index] = {};
                     }
-                    
+
                     updateInputValues(comp, compType, selectedValue, index);
                 }
             });
+
+            let parentCard = $(this).closest('.card');
+
+            // Add the 'wobble-effect' class to trigger the animation
+            parentCard.addClass('wobble-effect');
+
+            // Listen for the end of the animation and then remove the class
+            parentCard.on('animationend', function() {
+                parentCard.removeClass('wobble-effect');
+            });
         });
-        
+
         $(document).on('input', 'input', function() {
             let input = $(this);
             let inputName = input.attr('name');
             let index = inputName.match(/\d+$/)[0];
-            
+
             const componentDetails = [
                 { type: 'Chunker', regex: /(ExperimentChunker)_(.+)_\d+$/ },
                 { type: 'Ranker', regex: /(ExperimentRanker)_(.+)_\d+$/ },
                 { type: 'QA', regex: /(ExperimentQA)_(.+)_\d+$/ },
             ];
-        
+
             componentDetails.forEach((compDetail) => {
                 let match = inputName.match(compDetail.regex);
                 if (match) {
                     let fieldType = match[2];
                     let compType = match[1].split('Experiment')[1];
                     let selector = $(`select[name="${compDetail.type}_${compType.toLowerCase()}_type_${index}"]`).val();
-        
+
                     if (!customValues[compDetail.type][index]) {
                         customValues[compDetail.type][index] = {};
                     }
-                    
+
                     if (!customValues[compDetail.type][index][selector]) {
                         customValues[compDetail.type][index][selector] = {};
-                    } 
-                    
+                    }
+
                     customValues[compDetail.type][index][selector][fieldType] = input.val();
                     console.log(customValues);
                 }
             });
         });
-                    
+
         function updateInputValues(comp, compType, selectedValue, index) {
             comp.fields.forEach(field => {
                 let inputName = `${comp.prefix}_${field}_${index}`;
                 let input = $(`input[name="${inputName}"]`);
                 let newValue = defaultValues[compType][selectedValue][field];
-                
+
                 if (field.includes('_name')) {
                     newValue += index;
                 }
-        
+
                 if (!customValues[compType][index][selectedValue] || !customValues[compType][index][selectedValue][field]) {
                     input.val(newValue);
                 } else {
