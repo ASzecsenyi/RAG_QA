@@ -50,6 +50,10 @@ class ExperimentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.cols = {'ExperimentTextDocument': 'Document',
+                     'ExperimentChunker': 'Chunker',
+                     'ExperimentRanker': 'Ranker',
+                     'ExperimentQA': 'QA'}
         self.id_dict = {
             'ExperimentTextDocument': {},
             'ExperimentNewsQaDocument': {},
@@ -175,44 +179,6 @@ class ExperimentForm(forms.ModelForm):
             cleaned_data[key] = file
 
         return cleaned_data
-
-    def group_component_fields(self) -> dict[str, List[tuple[str, Any]]]:
-        grouped_fields = {
-            'ExperimentTextDocument': [],
-            'ExperimentChunker': [],
-            'ExperimentRanker': [],
-            'ExperimentQA': [],
-        }
-
-        for name, field in self.fields.items():
-            if name.startswith('delete_'):
-                # Splitting to identify the component type and index
-                _, component_type, index = name.split('_')
-                if component_type == 'ExperimentNewsQaDocument':
-                    component_type = 'ExperimentTextDocument'
-                # Initialize dict for this index if not already done
-                if not any(d['index'] == index for d in grouped_fields[component_type]):
-                    grouped_fields[component_type].append({'index': index, 'fields': []})
-
-                # Find the dict for this index and append the field
-                for component_dict in grouped_fields[component_type]:
-                    if component_dict['index'] == index:
-                        component_dict['fields'].append((name, field))
-            else:
-                for component_type in ['ExperimentTextDocument', 'ExperimentChunker', 'ExperimentRanker',
-                                       'ExperimentQA']:
-                    if component_type in name:
-                        index = name.split('_')[-1]
-                        found = False
-                        for component_dict in grouped_fields[component_type]:
-                            if component_dict['index'] == index:
-                                component_dict['fields'].append((name, field))
-                                found = True
-                                break
-                        if not found:
-                            grouped_fields[component_type].append({'index': index, 'fields': [(name, field)]})
-
-        return grouped_fields
 
     def get_initial_components_data(self):
         initial_components_data = {'components': []}

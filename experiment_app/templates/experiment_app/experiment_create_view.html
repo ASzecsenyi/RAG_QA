@@ -13,23 +13,55 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <style>
+        .separator {
+            position: relative; /* Needed for absolute positioning of pseudo-elements */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* Full height relative to its columns */
+            width: 10px; /* Adjust based on your preference */
+            overflow: hidden; /* Ensures pseudo-elements don’t spill out */
+        }
+
+        .separator::before,
+        .separator::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: #dee2e6; /* Use the separator’s background color */
+        }
+
+        .separator::before {
+            top: 0;
+            bottom: 50%; /* Occupy the top half */
+            transform: perspective(10px) rotateX(10deg); /* Slight tilt to create top trapezoid half */
+            transform-origin: bottom;
+        }
+
+        .separator::after {
+            top: 50%; /* Occupy the bottom half */
+            bottom: 0;
+            transform: perspective(10px) rotateX(-10deg); /* Opposite tilt for bottom half */
+            transform-origin: top;
+        }
+
+        .card-body {
+            background-color: #fff; /* Keep the body of the card white for readability */
+        }
         .button-container {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             padding: 10px 0;
-            background-color: #f8f9fa; /* Light gray background, or choose your own */
             border-top: 1px solid #dee2e6; /* Adds a subtle border on top for separation */
             text-align: center;
-            z-index: 1000; /* Ensures it's above most other elements */
-        }
-
-        .container {
-            padding-bottom: 100px; /* Adjust this value based on your button container's height to ensure it doesn't overlap content */
+            z-index: 950; /* Ensures it's above most other elements */
         }
 
         .card-wrapper {
+            margin-top: 10px;
             position: relative; /* This makes the absolute positioning of the card relative to this wrapper */
             height: 40px; /* Initial height of the compact card */
             margin-bottom: 10px; /* Spacing between cards */
@@ -83,32 +115,58 @@
         .wobble-effect {
             animation: wobble-animation 0.2s ease-in-out;
         }
+
+        .full-span-row {
+            display: flex; /* Make this a flex container */
+            flex-wrap: nowrap; /* Prevent items from wrapping */
+            align-items: center; /* Vertically centers the flex items */
+            height: 50vh; /* Adjust based on your design needs */
+        }
+
+        #full-span-row .col {
+            flex: 1; /* Make each column take up equal space */
+            display: flex; /* Make the column itself a flex container */
+            flex-direction: column; /* Stack the children vertically */
+            justify-content: center; /* Center children vertically in the column */
+            overflow: auto; /* Add scrollbars if necessary */
+            height: 50vh; /* Adjust based on your design needs */
+        }
+
     </style>
 </head>
 <body>
 <div class="container mt-5">
     {{ initial_data|json_script:"initial-data" }}
-    <h1>RAG QA</h1>
     <div class="row">
         <div class="col">
-
+            <h1>RAG QA</h1>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <!-- Display the basic form fields -->
-                <div class="mb-3">
+                <div class="mb-3 row-1">
                     {{ form.name }}
                     {% if form.name.errors %}
                         <div class="alert alert-danger">{{ form.name.errors.as_text }}</div>
                     {% endif %}
                 </div>
-
+                <div class="row">
+                    {% for class, name in form.cols.items %}
+                        <div class="col">
+                            <h3>{{ name }}</h3>
+                        </div>
+                    {% endfor %}
+                </div>
                 <!-- Container for dynamically added components in columns -->
-                <div id="componentsContainer" class="row">
-                    {% for class, components in grouped_fields.items %}
+                <div id="componentsContainer" class="row full-span-row" >
+                    {% for class, name in form.cols.items %}
                         <div id="{{ class }}" class="col">
-                            <h3>{{ class|slice:"10:" }}</h3>
 
                         </div>
+                        {% if not forloop.last %}
+                            <div class="separator">x</div>
+                        {% else %}
+                            <div class="separator">></div>
+                        {% endif %}
                     {% endfor %}
                 </div>
                 <div class="text-center mt-4 button-container">
@@ -127,9 +185,8 @@
             </form>
         </div>
 
-        <div class="col-3">
+        <div id="answer-col" class="col"style="overflow-wrap: break-word;">
             <div id="answer" class="container mt-5">
-                <!-- if the answer is not the empty string: -->
                 {% if answer %}
                     <h2>Answer:</h2>
                     <p>{{ answer }}</p>
@@ -203,9 +260,9 @@
         let question = componentData ? componentData.question : '';
 
         const html = `
-            <div class="card-wrapper">
+            <div class="card-wrapper ExperimentTextDocument">
                 <div class="card mb-3 compact">
-                    <div class="card-header component-title">Text Document ${TextDocumentIndexCount + 1}</div>
+                    <div class="card-header component-title">Text ${TextDocumentIndexCount + 1}</div>
                     <div class="card-body">
                         <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
                         <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2" value="${file_path}">
@@ -224,9 +281,9 @@
         let story_id = componentData ? componentData.story_id : '';
 
         const html = `
-    <div class="card-wrapper">
+    <div class="card-wrapper ExperimentTextDocument">
         <div class="card mb-3 compact">
-            <div class="card-header component-title">NewsQA Document ${NewsQADocumentIndexCount + 1}</div>
+            <div class="card-header component-title">NewsQA ${NewsQADocumentIndexCount + 1}</div>
             <div class="card-body">
                 <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2" value="${story_id}">
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
@@ -246,7 +303,7 @@
         let chunker_name = componentData ? componentData.chunker_name : `chunker_${ChunkerIndexCount}`;
 
         const html = `
-    <div class="card-wrapper">
+    <div class="card-wrapper ExperimentChunker">
         <div class="card mb-3 compact">
             <div class="card-header component-title">Chunker ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
@@ -273,7 +330,7 @@
         let ranker_name = componentData ? componentData.ranker_name : `ranker_${RankerIndexCount}`;
 
         const html = `
-    <div class="card-wrapper">
+    <div class="card-wrapper ExperimentRanker">
         <div class="card mb-3 compact">
             <div class="card-header component-title">Ranker ${RankerIndexCount + 1}</div>
             <div class="card-body">
@@ -299,7 +356,7 @@
         let model_name = componentData ? componentData.model_name : `qa_${QAIndexCount}`;
 
         const html = `
-    <div class="card-wrapper">
+    <div class="card-wrapper ExperimentQA">
         <div class="card mb-3 compact">
             <div class="card-header component-title">QA ${QAIndexCount + 1}</div>
             <div class="card-body">
@@ -353,6 +410,19 @@
 });
 
     $(document).ready(function () {
+        var answerDiv = document.getElementById('answer-col');
+        var textContent = answerDiv.textContent || answerDiv.innerText;
+        textContent = textContent.trim();
+        
+        console.log('txt')
+        console.log(!textContent)
+        
+        
+    
+        if (!textContent) {
+            /* change answerDiv class to col-1 */
+            answerDiv.className = 'col-3';
+        }
         // For existing elements, update their classes
         $('input[type="text"], input[type="file"], input[type="number"], select').addClass('form-control mb-2');
         $('input[type="checkbox"]').addClass('form-check-input mb-2');
@@ -405,7 +475,7 @@
 
               // Prevent page from scrolling if there's a select element to scroll through
               // Comment this out if you want the whole page to scroll normally
-              e.preventDefault();
+              //e.preventDefault();
           });
 
         $(document).on('change', '.form-select', function() {

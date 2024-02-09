@@ -30,6 +30,7 @@ evals = {
 
 def experiment_create_view(request):
     answer = None  # Use None as the default state to signify no answer yet
+    context = None  # Use None as the default state to signify no context yet
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
@@ -81,18 +82,18 @@ def experiment_create_view(request):
             first_result = results[list(results.keys())[0]]
             if len(first_result) > 0:
                 answer = first_result[0].get('answer', 'no ans')
+                context = first_result[0].get('contexts', 'no context')
             else:
                 answer = 'no ans 2'
+                context = 'no context 2'
 
     form = ExperimentForm()
-
-    grouped_fields = form.group_component_fields()
 
     initial_data = form.get_initial_components_data()
 
     return render(request, 'experiment_app/experiment_create_view.html', {
         'form': form,
         'answer': answer,
-        'grouped_fields': grouped_fields,
+        'context': context,
         'initial_data': initial_data
     })
