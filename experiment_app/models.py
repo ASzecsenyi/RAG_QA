@@ -15,6 +15,7 @@ class ExperimentTextDocument(models.Model):
     file_path = models.CharField(max_length=100, blank=True, null=True)
     file_content = models.TextField(blank=True, null=True)
     question = models.TextField()
+    textdoc_name = models.CharField(max_length=100, blank=True, null=True)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
     class Meta:
@@ -23,6 +24,7 @@ class ExperimentTextDocument(models.Model):
 
 class ExperimentNewsQaDocument(models.Model):
     story_id = models.CharField(max_length=100, blank=True, null=True)
+    newsqa_name = models.CharField(max_length=100, blank=True, null=True)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
     class Meta:

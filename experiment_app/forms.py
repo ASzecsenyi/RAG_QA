@@ -13,9 +13,11 @@ class ExperimentForm(forms.ModelForm):
             'file': forms.FileField,
             'file_path': forms.CharField,
             'question': forms.CharField,
+            'textdoc_name': forms.CharField,
         },
         ExperimentNewsQaDocument: {
             'story_id': forms.CharField,
+            'newsqa_name': forms.CharField,
         },
         ExperimentChunker: {
             'chunker_type': forms.ChoiceField,
@@ -72,7 +74,7 @@ class ExperimentForm(forms.ModelForm):
         for component, component_fields in self.components.items():
             self.init_component_fields(component, component_fields)
 
-        print(self.id_dict)
+        # print(self.id_dict)
 
     def init_component_fields(self, component, component_fields: dict[str, Any]):
         # get the components of the most recent experiment
@@ -100,7 +102,7 @@ class ExperimentForm(forms.ModelForm):
 
     @transaction.atomic
     def save_components(self, experiment, component_model, component_fields: dict[str, Any], create_new: bool):
-        print(component_model)
+        # print(component_model)
 
         form_component_ids = set([int(key.split('_')[-1]) for key in self.data if
                                   any([key.startswith(f'{component_model.__name__}_{field_name}_') for field_name in component_fields])])
@@ -134,7 +136,7 @@ class ExperimentForm(forms.ModelForm):
                 updated_components.append(comp)
 
         component_model.objects.bulk_create(new_components)
-        print([field.name for field in component_model._meta.fields])
+        # print([field.name for field in component_model._meta.fields])
         component_model.objects.bulk_update(updated_components, fields=[field.name for field in component_model._meta.fields if field.name != 'id'])
 
     def save(self, commit=True, create_new=False):
@@ -155,7 +157,7 @@ class ExperimentForm(forms.ModelForm):
         for text_document in experiment.experimenttextdocument_set.all():
             # if The 'file' attribute has a file associated with it
             if text_document.file:
-                print('file', text_document.file.path)
+                # print('file', text_document.file.path)
 
                 text_document.file_path = text_document.file.path
                 text_document.file = None
