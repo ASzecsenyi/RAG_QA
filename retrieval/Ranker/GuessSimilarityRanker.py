@@ -10,7 +10,7 @@ from retrieval.Ranker import Ranker
 
 
 class GuessSimilarityRanker(Ranker):
-    def __init__(self, top_k: int, num_of_paraphrases: int = 5, api_key: str = None, **kwargs):
+    def __init__(self, top_k: int, num_of_paraphrases: int = 5, api_key: str = None, name=None, **kwargs):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
@@ -18,7 +18,7 @@ class GuessSimilarityRanker(Ranker):
         :param kwargs: Keyword arguments for the TfidfVectorizer
         :type kwargs: dict
         """
-        super().__init__(top_k)
+        super().__init__(top_k, name=name,)
         self.api_key = api_key
         if api_key is None:
             try:
@@ -28,7 +28,8 @@ class GuessSimilarityRanker(Ranker):
                     "HUGGINGFACE_API_KEY environment variable not found. Please set it or pass it as an argument."
                 )
         self.index = None
-        self.name += f"_{kwargs}"
+        if kwargs and name is None:
+            self.name += f"_{kwargs}"
         self.vectors = None
         self.num_of_paraphrases = num_of_paraphrases
 

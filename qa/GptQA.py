@@ -21,8 +21,8 @@ class GptQA(QA):
                 raise KeyError(
                     "OPENAI_API_KEY environment variable not found. Please set it or pass it as an argument."
                 )
-
-        self.name += f"_{self.api_key[-5:]}"
+        if name is None:
+            self.name += f"_{self.api_key[-5:]}"
 
         openai.api_key = self.api_key
 

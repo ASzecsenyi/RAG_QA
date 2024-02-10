@@ -24,7 +24,7 @@ class TfidfRanker(Ranker):
     # lemmatizer = WordNetLemmatizer()
     stemmer = PorterStemmer()
 
-    def __init__(self, top_k: int, **kwargs):
+    def __init__(self, top_k: int, name=None, **kwargs):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
@@ -32,8 +32,9 @@ class TfidfRanker(Ranker):
         :param kwargs: Keyword arguments for the TfidfVectorizer
         :type kwargs: dict
         """
-        super().__init__(top_k)
-        self.name += f"_{kwargs}"
+        super().__init__(top_k, name)
+        if name is None:
+            self.name += f"_{kwargs}"
         self.vectorizer = TfidfVectorizer(**kwargs)
         self.chunks = None
         self.vectors = None

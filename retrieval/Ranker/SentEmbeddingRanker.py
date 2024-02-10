@@ -8,7 +8,7 @@ from retrieval.Ranker import Ranker
 
 
 class SentEmbeddingRanker(Ranker):
-    def __init__(self, top_k: int):
+    def __init__(self, top_k: int, name=None):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
@@ -16,9 +16,10 @@ class SentEmbeddingRanker(Ranker):
         :param kwargs: Keyword arguments for the TfidfVectorizer
         :type kwargs: dict
         """
-        super().__init__(top_k)
+        super().__init__(top_k, name)
         self.index = None
-        self.name += "_sent_embedding"
+        if name is None:
+            self.name += "_sent_embedding"
         self.vectors = None
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
