@@ -29,8 +29,7 @@ evals = {
 
 
 def experiment_create_view(request):
-    answer = None  # Use None as the default state to signify no answer yet
-    context = None  # Use None as the default state to signify no context yet
+    answers = {}
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
@@ -42,24 +41,32 @@ def experiment_create_view(request):
             for text_document in experiment.experimenttextdocument_set.all():
                 file_data = TextDocument(
                     document=text_document.file_content,
-                    questions=[{"question": text_document.question, "ground_truths": [""]}]
+                    questions=[{"question": text_document.question, "ground_truths": [""]}],
+                    name=text_document.textdoc_name
                 )
                 datasets.append(file_data)
 
             for news_qa_document in experiment.experimentnewsqadocument_set.all():
-                file_data = NewsQaDocument(news_qa_document.story_id)
+                file_data = NewsQaDocument(
+                    story_id=news_qa_document.story_id,
+                    name=news_qa_document.newsqa_name
+                )
                 datasets.append(file_data)
 
             chunkers = []
             for chunker_params in experiment.experimentchunker_set.all():
                 chunkers.append(evals[chunker_params.chunker_type](
                     chunk_length=chunker_params.chunk_length,
-                    sliding_window_size=chunker_params.sliding_window_size
+                    sliding_window_size=chunker_params.sliding_window_size,
+                    name=chunker_params.chunker_name
                 ))
 
             rankers = []
             for ranker_params in experiment.experimentranker_set.all():
-                rankers.append(evals[ranker_params.ranker_type](ranker_params.top_k))
+                rankers.append(evals[ranker_params.ranker_type](
+                    top_k=ranker_params.top_k,
+                    name=ranker_params.ranker_name
+                ))
 
             qas = []
             for qa_params in experiment.experimentqa_set.all():
@@ -76,16 +83,17 @@ def experiment_create_view(request):
 
             # print(experiment_run)
 
-            results = experiment_run.run()
+            experiment_run.run()
+            experiment_run.evaluate_with_rouge_score()
+            results = experiment_run.results
 
-            # print(results)
-            first_result = results[list(results.keys())[0]]
-            if len(first_result) > 0:
-                answer = first_result[0].get('answer', 'no ans')
-                context = first_result[0].get('contexts', 'no context')
-            else:
-                answer = 'no ans 2'
-                context = 'no context 2'
+            for chunker_name in [chunker.chunker_name for chunker in experiment.experimentchunker_set.all()]:
+                for ranker_name in [ranker.ranker_name for ranker in experiment.experimentranker_set.all()]:
+                    for qa_name in [qa.model_name for qa in experiment.experimentqa_set.all()]:
+                        for dataset_name in [text_document.textdoc_name for text_document in experiment.experimenttextdocument_set.all()] + [news_qa_document.newsqa_name for news_qa_document in experiment.experimentnewsqadocument_set.all()]:
+                            answers[f"{chunker_name}<sep>{ranker_name}<sep>{qa_name}<sep>{dataset_name}"] = results[f"{chunker_name}_{ranker_name}_{qa_name}_{dataset_name}"]
+
+            print(results)
 
     form = ExperimentForm()
 
@@ -93,7 +101,8 @@ def experiment_create_view(request):
 
     return render(request, 'experiment_app/experiment_create_view.html', {
         'form': form,
-        'answer': answer,
-        'context': context,
+        'answers': answers,
+        # 'context': context,
+        # 'result': result,
         'initial_data': initial_data
     })

@@ -45,10 +45,12 @@
             transform: perspective(10px) rotateX(-10deg); /* Opposite tilt for bottom half */
             transform-origin: top;
         }
-
-        .card-body {
-            background-color: #fff; /* Keep the body of the card white for readability */
+        
+        .highlighted-component {
+            /* give red border */
+            border: 2px solid red;
         }
+
         .button-container {
             position: fixed;
             bottom: 0;
@@ -60,11 +62,19 @@
             z-index: 950; /* Ensures it's above most other elements */
         }
 
+        .card-body {
+            background-color: #fff; /* Keep the body of the card white for readability */
+        }
+
         .card-wrapper {
-            margin-top: 10px;
+            margin-top: 15px;
             position: relative; /* This makes the absolute positioning of the card relative to this wrapper */
-            height: 40px; /* Initial height of the compact card */
-            margin-bottom: 10px; /* Spacing between cards */
+            height: auto; /* Initial height of the compact card */
+            margin-bottom: 15px; /* Spacing between cards */
+        }
+
+        .card-wrapper:hover {
+            height: 70px;
         }
 
         .card.compact .card-body {
@@ -75,6 +85,7 @@
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: initial;
+            position: relative;
             z-index: 1; /* Ensure it's above base items but below expanded items */
         }
 
@@ -83,18 +94,6 @@
             position: fixed; /* Ensure it doesn't move other components */
             height: auto; /* Let it expand to natural height */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better focus */
-        }
-
-        .card.compact:hover ~ * {
-            filter: blur(4px); /* Adjust blur as necessary */
-        }
-
-        .container:hover {
-            filter: none;
-        }
-
-        .container * {
-            transition: filter 0.3s ease;
         }
 
         .card.compact:hover .card-body {
@@ -137,6 +136,7 @@
 <body>
 <div class="container mt-5">
     {{ initial_data|json_script:"initial-data" }}
+    {{ answers|json_script:"answers" }}
     <div class="row">
         <div class="col">
             <h1>RAG QA</h1>
@@ -185,15 +185,8 @@
             </form>
         </div>
 
-        <div id="answer-col" class="col"style="overflow-wrap: break-word;">
-            <div id="answer" class="container mt-5">
-                {% if answer %}
-                    <h2>Answer:</h2>
-                    <p>{{ answer }}</p>
-                    <h2>Context:</h2>
-                    <p>{{ context }}</p>
-                {% endif %}
-            </div>
+        <div id="answer" class="col container mt-5 component-highlighter" style="overflow-wrap: break-word; overflow-y: scroll; height: 80vh;">
+           
         </div>
 
     </div>
@@ -258,6 +251,7 @@
         let fileName = componentData ? componentData.fileName : '';
         let file_path = componentData ? componentData.file_path : '';
         let question = componentData ? componentData.question : '';
+        let textdoc_name = componentData ? componentData.textdoc_name : `textdoc_${TextDocumentIndexCount}`;
 
         const html = `
             <div class="card-wrapper ExperimentTextDocument">
@@ -267,6 +261,7 @@
                         <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
                         <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2" value="${file_path}">
                         <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2" value="${question}">
+                        <input type="text" name="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" placeholder="Text Document Name" class="form-control mb-2" value="${textdoc_name}">
                         <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
                     </div>
                 </div>
@@ -278,7 +273,8 @@
     }
 
     function addNewsQADocumentComponent(componentData = null) {
-        let story_id = componentData ? componentData.story_id : '';
+        let story_id = componentData ? componentData.story_id : './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story';
+        let newsqa_name = componentData ? componentData.newsqa_name : `newsqa_${NewsQADocumentIndexCount}`;
 
         const html = `
     <div class="card-wrapper ExperimentTextDocument">
@@ -286,6 +282,7 @@
             <div class="card-header component-title">NewsQA ${NewsQADocumentIndexCount + 1}</div>
             <div class="card-body">
                 <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2" value="${story_id}">
+                <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" placeholder="NewsQA Name" class="form-control mb-2" value="${newsqa_name}">
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
             </div>
         </div>
@@ -305,7 +302,7 @@
         const html = `
     <div class="card-wrapper ExperimentChunker">
         <div class="card mb-3 compact">
-            <div class="card-header component-title">Chunker ${ChunkerIndexCount + 1}</div>
+            <div class="card-header component-title">${chunker_type} ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
                 <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
                     <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
@@ -332,7 +329,7 @@
         const html = `
     <div class="card-wrapper ExperimentRanker">
         <div class="card mb-3 compact">
-            <div class="card-header component-title">Ranker ${RankerIndexCount + 1}</div>
+            <div class="card-header component-title">${ranker_type} ${RankerIndexCount + 1}</div>
             <div class="card-body">
                 <select name="ExperimentRanker_ranker_type_${RankerIndexCount}"  class="form-select mb-2">
                     <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
@@ -358,7 +355,7 @@
         const html = `
     <div class="card-wrapper ExperimentQA">
         <div class="card mb-3 compact">
-            <div class="card-header component-title">QA ${QAIndexCount + 1}</div>
+            <div class="card-header component-title">${model_type} ${QAIndexCount + 1}</div>
             <div class="card-body">
                 <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
                     <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
@@ -381,44 +378,74 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-    const initialData = JSON.parse(document.getElementById('initial-data').textContent)['components'];
-    console.log(initialData);
-    initialData.forEach(component => {
-        switch(component.type) {
-                case 'ExperimentTextDocument':
-                    console.log(component.data);
-                    addTextDocumentComponent(component.data);
-                    break;
-
-                case 'ExperimentNewsQADocument':
-                    addNewsQADocumentComponent(component.data);
-                    break;
-
-                case 'ExperimentChunker':
-                    addChunkerComponent(component.data);
-                    break;
-
-                case 'ExperimentRanker':
-                    addRankerComponent(component.data);
-                    break;
-
-                case 'ExperimentQA':
-                    addQAComponent(component.data);
-                    break;
-            }
+        const initialData = JSON.parse(document.getElementById('initial-data').textContent)['components'];
+        console.log(initialData);
+        initialData.forEach(component => {
+            switch(component.type) {
+                    case 'ExperimentTextDocument':
+    
+                        addTextDocumentComponent(component.data);
+                        break;
+    
+                    case 'ExperimentNewsQaDocument':
+                        console.log('news')
+                        console.log(component.data);
+                        addNewsQADocumentComponent(component.data);
+                        break;
+    
+                    case 'ExperimentChunker':
+                        addChunkerComponent(component.data);
+                        break;
+    
+                    case 'ExperimentRanker':
+                        addRankerComponent(component.data);
+                        break;
+    
+                    case 'ExperimentQA':
+                        addQAComponent(component.data);
+                        break;
+                }
+        });
+        const answers = JSON.parse(document.getElementById('answers').textContent);
+        console.log(answers);
+        // answers is a dictionary with the keys being the set of component instances (i.e. pipelines) and the values being the list of answers
+        // iterate through the dictionary and display the answers
+        for (const [key, value] of Object.entries(answers)) {
+            let answerDiv = document.getElementById('answer');
+            let answer = document.createElement('div');
+            // id the answer div with the key
+            // key looks like chunker_0<sep>ranker_0<sep>qa_0<sep>newsqa_0
+            answer.id = key;
+            // add class component-highlighter-element
+            answer.className = 'component-highlighter-element';
+            value.forEach((val, index) => {
+                // val is a dict, we want the keys question, answer, ground_truths, contexts and fmeasure
+                let html = `
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Question ${index + 1}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Question:</strong> ${val.question}</p>
+                            <p><strong>Answer:</strong> ${val.answer}</p>
+                            <p><strong>Ground Truths:</strong> ${val.ground_truths}</p>
+                            <p><strong>Contexts:</strong> ${val.contexts}</p>
+                            <p><strong>F-Measure:</strong> ${val.fmeasure}</p>
+                        </div>
+                    </div>
+                `;
+                answer.innerHTML += html;
+            });
+            answerDiv.appendChild(answer);
+        }
+        
     });
-});
 
     $(document).ready(function () {
-        var answerDiv = document.getElementById('answer-col');
+        var answerDiv = document.getElementById('answer');
         var textContent = answerDiv.textContent || answerDiv.innerText;
         textContent = textContent.trim();
-        
-        console.log('txt')
-        console.log(!textContent)
-        
-        
-    
+
         if (!textContent) {
             /* change answerDiv class to col-1 */
             answerDiv.className = 'col-3';
@@ -429,7 +456,7 @@
         $('input[type="select"]').addClass('form-select mb-2');
         $('label').addClass('form-check-label');
 
-         $('#componentsContainer .col').each(function() {
+        $('#componentsContainer .col').each(function() {
             $(this).sortable({
                 items: ".card-wrapper",
                 axis: 'y',
@@ -447,8 +474,50 @@
                 }
             }).disableSelection();
         });
+        
+        const names = ['chunker_name', 'ranker_name', 'model_name', 'textdoc_name', 'newsqa_name', ];
+         
+        $(document).on('wheel', '.component-highlighter', function(e) {    
+            console.log('scrolling');
+            // find the component-highlighter-element that is currently in view
+            let componentHighlighter = $(this);
+            let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
+            console.log(componentHighlighterElements);
+            let currentElement = componentHighlighterElements.filter(function() {
+                let rect = this.getBoundingClientRect();
+                return (
+                    // true if any part of the element is in the viewport - the element is a lot taller than the viewport
+                    rect.top <= window.innerHeight && rect.bottom >= 0
+                    
+                    
+                );
+            });
+            console.log(currentElement.length);
+            // if the currentElement is not empty, then we have an element in view
+            if (currentElement.length) {
+                // get the id of the currentElement
+                let currentElementId = currentElement[0].id;
+                // get the components whose names are in the currentElementId
+                let components = currentElementId.split('<sep>');
+                console.log(components);
+                // iterate through the components and highlight them - find the component whose name is in the components list and add the class highlighted-component
+                components.forEach((component) => {
+                    // find the component whose name is in the components list
+                    // iterate through the names list and look at all the text inputs whose name contains the component name
+                    // if the value of the text input is the same as the component name, then add the class highlighted-component
+                    names.forEach((name) => {
+                        let componentWrapper = $(`input[name*="${name}"]`).filter(function() {
+                            return this.value === component;
+                        }).closest('.card');
+                        componentWrapper.addClass('highlighted-component');
+                        // remove the class highlighted-component from all the other components in the same column
+                        componentWrapper.closest('.col').find('.card').not(componentWrapper).removeClass('highlighted-component');
+                    });
+                });
+                
+            }
+        });
 
-        // Your existing functions to add components go here
         $(document).on('wheel', '.card', function(e) {
               // Find the select element within the card
               let select = $(this).find('.form-select');
@@ -472,6 +541,22 @@
                       select.prop('selectedIndex', selectedIndex + 1).change();
                   }
               }
+
+              // if reached the end of the options, jump back to the first option
+              if (selectedIndex === select.children('option').length - 1 && scrollDirection > 0) {
+                  select.prop('selectedIndex', 0).change();
+              }
+
+              // if reached the start of the options, jump back to the last option
+              if (selectedIndex === 0 && scrollDirection < 0) {
+                  select.prop('selectedIndex', select.children('option').length - 1).change();
+              }
+
+              // change the card name to the selected option + current index
+                let cardHeader = $(this).find('.card-header');
+                let selectedValue = select.val();
+                cardHeader.text(`${selectedValue} ${cardHeader.text().split(' ')[1]}`);
+
 
               // Prevent page from scrolling if there's a select element to scroll through
               // Comment this out if you want the whole page to scroll normally
