@@ -12,7 +12,7 @@ from retrieval import Chunker, Ranker
 from qa import QA
 
 
-def evaluate_rouge_score(answers: list[str], ground_truths: list[str]):
+def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[str, list[float]]:
     """
     Evaluates the answers with the ROGUE score.
 
@@ -28,12 +28,12 @@ def evaluate_rouge_score(answers: list[str], ground_truths: list[str]):
     scorer = rouge_scorer.RougeScorer(['rouge1'], use_stemmer=True)
     scores = [scorer.score(prediction=answer, target=' '.join(ground_truth)) for answer, ground_truth in zip(answers, ground_truths)]
 
-    print(scores)
+    # print(scores)
 
     final_score = {
-        'fmeasure': sum([score['rouge1'].fmeasure for score in scores]) / len(scores),
-        'precision': sum([score['rouge1'].precision for score in scores]) / len(scores),
-        'recall': sum([score['rouge1'].recall for score in scores]) / len(scores)
+        'fmeasure': [score['rouge1'].fmeasure for score in scores],
+        'precision': [score['rouge1'].precision for score in scores],
+        'recall': [score['rouge1'].recall for score in scores]
     }
 
     return final_score
@@ -78,6 +78,7 @@ class Experiment:
         :param qa: The QA model or models to use
         :type qa: Union[QA, list[QA]]
         """
+        self.evaluation = None
         self.name = name
         self.description = description
 
@@ -102,8 +103,8 @@ class Experiment:
         self.verbose = False
 
     def r(self, function, text, times, silenced=False, **kwargs):
-        if self.verbose and not silenced:
-            print(f"{text}")
+        # if self.verbose and not silenced:
+        #     print(f"{text}")
 
         start_time = time.time()
 
@@ -248,7 +249,7 @@ class Experiment:
     def evaluate_with_rouge_score(self):
         assert self.results is not None, "Experiment must be run before evaluation"
 
-        evalutions = {}
+        evaluations = {}
 
         for result_setup, results in self.results.items():
             if result_setup == "times":
@@ -263,9 +264,17 @@ class Experiment:
             # evaluate results with rogue score
             evaluation = evaluate_rouge_score(answers, ground_truths)
 
-            evalutions[result_setup] = evaluation
+            # write the evaluation to self.results
+            for key, value in evaluation.items():
+                for i, result in enumerate(results):
+                    if key not in result:
+                        result[key] = value[i]
 
-        return evalutions
+            evaluations[result_setup] = {key: sum(value) / len(value) for key, value in evaluation.items()}
+
+        self.results["evaluations"] = evaluations
+
+        return evaluations
 
     def __repr__(self):
         return f"Experiment(name={self.name}, description={self.description}, dataset={self.dataset}, chunker={self.chunker}, ranker={self.ranker}, qa={self.qa})"
