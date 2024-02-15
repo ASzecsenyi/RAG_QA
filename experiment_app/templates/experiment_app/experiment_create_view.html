@@ -420,6 +420,9 @@
             answer.className = 'component-highlighter-element';
             value.forEach((val, index) => {
                 // val is a dict, we want the keys question, answer, ground_truths, contexts and fmeasure
+                
+                
+                
                 let html = `
                     <div class="card mb-3">
                         <div class="card-header">
@@ -427,9 +430,11 @@
                         </div>
                         <div class="card-body">
                             <p><strong>Question:</strong> ${val.question}</p>
-                            <p><strong>Answer:</strong> ${val.answer}</p>
-                            <p><strong>Ground Truths:</strong> ${val.ground_truths}</p>
-                            <p><strong>Contexts:</strong> ${val.contexts}</p>
+                            <p><strong>Answer:</strong> ${val.answer.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)}</p>
+                            <p><strong>Ground Truths:</strong> <strong>${val.ground_truths}</strong></p>
+                            <p><strong>Contexts:</strong> ${val.contexts.map(context => context.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)).join(', ')}</p>
+                            <p><strong>Precision:</strong> ${val.precision}</p>
+                            <p><strong>Recall:</strong> ${val.recall}</p>
                             <p><strong>F-Measure:</strong> ${val.fmeasure}</p>
                         </div>
                     </div>
@@ -514,7 +519,6 @@
                         componentWrapper.closest('.col').find('.card').not(componentWrapper).removeClass('highlighted-component');
                     });
                 });
-                
             }
         });
 
