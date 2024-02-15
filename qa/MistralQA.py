@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 
@@ -39,7 +40,7 @@ class MistralQA(QA):
         inputs = (f"<s>[INST] {chunks} [/INST] "
                   f"Thank you, I will now very briefly answer your question based on this information. "
                   f"[INST] {question} [/INST]")
-
+        time.sleep(1)
         try:
             response = requests.post(
                 "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",

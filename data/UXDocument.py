@@ -41,7 +41,7 @@ class UXDocument(Document):
             name = f"ux_{chapter}"
 
         # get chapter and questions string from txt file. It was copy pasted from website, we do not want escapes like \u2019 so correct encoding must be used
-        with open(f"../data/files/ux_chapters/{chapter}", "r", encoding="utf-8"
+        with open(f"../data/files/ux_chapters/{chapter}.txt", "r", encoding="utf-8"
                   ) as f:
             file = f.read()
         document, questions = file.split("""Self Assessment Questions

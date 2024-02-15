@@ -29,6 +29,8 @@ class NewsQaDocument(Document):
         if name is None:
             name = f"newsqa_{story_id}"
 
+        print(name)
+
         # get all instances of the story and questions about it
         story_questions = newsqa[split].filter(lambda x: x['story_id'] == story_id)
 

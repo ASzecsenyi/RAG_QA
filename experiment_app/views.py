@@ -102,7 +102,5 @@ def experiment_create_view(request):
     return render(request, 'experiment_app/experiment_create_view.html', {
         'form': form,
         'answers': answers,
-        # 'context': context,
-        # 'result': result,
         'initial_data': initial_data
     })
