@@ -1,4 +1,5 @@
 import os
+import time
 
 import faiss
 import numpy as np
@@ -53,7 +54,7 @@ class GuessSimilarityRanker(Ranker):
 
     def rank(self, query: str) -> list[str]:
         answers: list[str] = self.get_guesses(query)
-        print(answers)
+        # print(answers)
         query_vectors = self.model.encode(answers)
         query_arr: np.ndarray = np.vstack(query_vectors, dtype="float32")
         if query_arr.shape[1] != self.index.d:
@@ -69,9 +70,11 @@ class GuessSimilarityRanker(Ranker):
         ranks = [sorted(rank, key=lambda x: x[0]) for rank in ranks]
         # get the sorted indices
         ranks = [[index for _, index in rank] for rank in ranks]
-        # get the top k chunks
+        # get the top k chunks7
+        if self.top_k > len(self.chunks):
+            return self.chunks
 
-        return [self.chunks[i] for i in ranks[0]][-self.top_k:]
+        return [self.chunks[i] for i in ranks[0][-self.top_k:] if i in range(len(self.chunks))]
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
@@ -94,8 +97,13 @@ class GuessSimilarityRanker(Ranker):
         except requests.exceptions.ConnectionError:
             input("Paused due to lost connection. Press enter to continue.")
             return self.get_guesses(query)
-
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            # if too many requests are made, the server will return a 429 status code
+            print("Too many requests. Waiting 60 seconds.")
+            time.sleep(60)
+            return self.get_guesses(query)
 
         response_str = response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
 

@@ -40,7 +40,7 @@ class MistralQA(QA):
         inputs = (f"<s>[INST] {chunks} [/INST] "
                   f"Thank you, I will now very briefly answer your question based on this information. "
                   f"[INST] {question} [/INST]")
-        time.sleep(1)
+        # time.sleep(1)
         try:
             response = requests.post(
                 "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
@@ -56,6 +56,12 @@ class MistralQA(QA):
             input("Paused due to lost connection. Press enter to continue.")
             return self.predict(question, chunks)
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            # if too many requests are made, the server will return a 429 status code
+            print("Too many requests. Waiting 60 seconds.")
+            time.sleep(60)
+            return self.predict(question, chunks)
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()

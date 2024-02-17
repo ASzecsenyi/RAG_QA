@@ -1,11 +1,13 @@
 import json
 import os
 import time
+from datetime import datetime
 
 from ragas import evaluate
 from datasets import Dataset
 from typing import Union, Any
 from rouge_score import rouge_scorer
+from tqdm import tqdm
 
 from data import Document
 from retrieval import Chunker, Ranker
@@ -62,7 +64,8 @@ class Experiment:
             dataset: Union[Document, list[Document]],
             chunker: Union[Chunker, list[Chunker]],
             ranker: Union[Ranker, list[Ranker]],
-            qa: Union[QA, list[QA]]
+            qa: Union[QA, list[QA]],
+            autoload: bool = True
     ):
         """
         :param name: The name of the experiment
@@ -86,6 +89,8 @@ class Experiment:
         self.chunker = chunker
         self.ranker = ranker
         self.qa = qa
+
+        self.autoload = autoload
 
         if not isinstance(self.dataset, list):
             self.dataset = [self.dataset]
@@ -129,20 +134,25 @@ class Experiment:
         results = {}
 
         times = {}
-        try:
-            self.load_results()
-        except FileNotFoundError:
-            print("No results found, running experiment")
+        if self.autoload:
+            try:
+                self.load_results(get_name=False)
+                results = self.results
+            except FileNotFoundError:
+                print("No results found, running experiment")
 
         for dataset in self.dataset:
             for chunker in self.chunker:
+                if isinstance(self.results, dict) and any(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for ranker in self.ranker for qa in self.qa]):
+                    print(f"Results for {dataset.name}, {chunker.name} already found, skipping")
+                    continue
                 chunks = self.r(chunker.chunk, f"Chunking data {dataset.name} with {chunker.name}", times, document=dataset.document)
 
                 for ranker in self.ranker:
                     self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
-                    for question in dataset.questions:
+                    for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
                         chunks = self.r(ranker.rank, f"Ranking question {question}", times, query=question["question"], silenced=True)
 
                         for qa in self.qa:
@@ -153,6 +163,9 @@ class Experiment:
                                 results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"].append(
                                     {"question": question["question"], "answer": answer, "ground_truths": question["ground_truths"], "contexts": chunks}
                                 )
+                            else:
+                                # if self.verbose:
+                                print(f"Question {question['question']} already answered")
                             self.results = results
 
                             self.save_results()
@@ -171,7 +184,7 @@ class Experiment:
         """
 
         if path is None:
-            path = f"../data/experiments/{self.name}.json"
+            path = f"../data/experiments/{self.name}-{datetime.now().strftime('%m-%d-%H-%M-%S')}.json"
             # create the directory if it does not exist
             if not os.path.exists(f"../data/experiments"):
                 os.makedirs(f"../data/experiments")
@@ -181,7 +194,17 @@ class Experiment:
         with open(path, "w") as f:
             json.dump(saved_results, f, indent=4)
 
-    def load_results(self, path: str = None):
+        # print(f"Results saved to {path}")
+
+        # if more than 5 files with the same name, delete the oldest
+        files = os.listdir(f"../data/experiments")
+        files.sort(key=lambda x: os.path.getmtime(f"../data/experiments/{x}"))
+        files = [file for file in files if file.startswith(self.name)]
+        if len(files) > 5:
+            # remove the oldest file with the same name
+            os.remove(f"../data/experiments/{files[0]}")
+
+    def load_results(self, path: str = None, get_name: bool = True):
         """
         Loads the experiment results from a json file.
 
@@ -194,14 +217,31 @@ class Experiment:
                 raise FileNotFoundError("No data directory found")
             if not os.path.exists(f"../data/experiments"):
                 raise FileNotFoundError("No experiments directory found")
-            path = f"../data/experiments/{self.name}.json"
+            # find the latest experiment file
+            files = os.listdir(f"../data/experiments")
+            if get_name:
+                files.sort(key=lambda x: os.path.getmtime(f"../data/experiments/{x}"))
+
+                if len(files) == 0:
+                    raise FileNotFoundError("No experiment files found")
+                path = f"../data/experiments/{files[-1]}"
+            else:
+                # get the latest experiment file that has the same name
+                files = [file for file in files if file.startswith(self.name)]
+                files.sort(key=lambda x: os.path.getmtime(f"../data/experiments/{x}"))
+                if len(files) == 0:
+                    raise FileNotFoundError("No experiment files found")
+                path = f"../data/experiments/{files[-1]}"
 
         with open(path, "r") as f:
             saved_results = json.load(f)
 
-        self.name = saved_results["name"]
+        if get_name:
+            self.name = saved_results["name"]
         self.description = saved_results["description"]
         self.results = saved_results["results"]
+
+        print(f"Results loaded from {path}")
 
     def evaluate_with_ragas(self):
         assert self.results is not None, "Experiment must be run before evaluation"
