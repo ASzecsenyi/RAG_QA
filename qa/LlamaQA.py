@@ -51,6 +51,13 @@ class LlamaQA(QA):
             input("Paused due to lost connection. Press enter to continue.")
             return self.predict(question, chunks)
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print(e)
+            # if too many requests are made, the server will return a 429 status code
+            print("Too many requests. Waiting 60 seconds.")
+            time.sleep(60)
+            return self.predict(question, chunks)
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()

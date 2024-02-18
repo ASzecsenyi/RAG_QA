@@ -143,7 +143,7 @@ class Experiment:
 
         for dataset in self.dataset:
             for chunker in self.chunker:
-                if isinstance(self.results, dict) and any(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for ranker in self.ranker for qa in self.qa]):
+                if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for ranker in self.ranker for qa in self.qa]):
                     print(f"Results for {dataset.name}, {chunker.name} already found, skipping")
                     continue
                 chunks = self.r(chunker.chunk, f"Chunking data {dataset.name} with {chunker.name}", times, document=dataset.document)
@@ -312,7 +312,22 @@ class Experiment:
 
             evaluations[result_setup] = {key: sum(value) / len(value) for key, value in evaluation.items()}
 
+        overall = {}
+
+        # average all evaluations that are the same setup except for the document
+        for result_setup, evaluation in evaluations.items():
+            if result_setup == "times":
+                continue
+
+            setup = "_".join(result_setup.split("_")[:-2])
+            if setup not in evaluations:
+                overall[setup] = {key: 0 for key in evaluation.keys()}
+            for key, value in evaluation.items():
+                overall[setup][key] += value/len(self.dataset)
+
+
         self.results["evaluations"] = evaluations
+        self.results["overall"] = overall
 
         return evaluations
 

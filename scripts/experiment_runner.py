@@ -338,18 +338,18 @@ ranker = TfidfRanker(top_k=5)
 ranker1 = SentEmbeddingRanker(top_k=5)
 ranker2 = GuessSimilarityRanker(top_k=5)
 
-mi_qa = MistralQA(name="mistralqa")
-# lam_qa = LlamaQA(name="llamaqa")
+# mi_qa = MistralQA(name="mistralqa")
+lam_qa = LlamaQA(name="llamaqa")
 
 # gpt_qa = GptQA(name="gptqa")
 
 experiment = Experiment(
-    name="test_long_150",
+    name="test_long_150_llama",
     description="test",
     dataset=documents,
     chunker=[chunker, chunker2],
     ranker=[ranker, ranker1, ranker2],
-    qa=mi_qa  # , gpt_qa]
+    qa=lam_qa  # , gpt_qa]
 )
 
 experiment.verbose = True
@@ -366,5 +366,7 @@ experiment.save_results()
 # evaluation = experiment.evaluate_with_ragas()
 
 evaluation = experiment.evaluate_with_rouge_score()
+
+experiment.save_results()
 
 # print(json.dumps(evaluation, indent=4, sort_keys=True))
