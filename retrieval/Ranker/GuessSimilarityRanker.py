@@ -74,16 +74,16 @@ class GuessSimilarityRanker(Ranker):
         if self.top_k > len(self.chunks):
             return self.chunks
 
-        return [self.chunks[i] for i in ranks[0][-self.top_k:] if i in range(len(self.chunks))]
+        return [self.chunks[i] for i in ranks[0][-self.top_k:] if i in range(len(self.chunks))], answers
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
                   f"Come up with {self.num_of_paraphrases} different ways the sentence that contains the answer might look like. "
-                  f"You don't have to come up with an answer, and you can replace it with the word 'MASK' in each of the sentences."
+                  f"You don't have to come up with an answer, and you can replace it with the word '[MASK]' in each of the sentences."
                   f"Separate the sentences with a semicolon. "
                   f"Example: "
                   f"Q: Who was driving th vehicle?"
-                  f"A: MASK was driving the vehicle; The person behind the wheel was MASK; The person in the driver's seat was MASK; The car was driven by MASK; They were MASK's passengers;"
+                  f"A: MASK was driving the vehicle; The person behind the wheel was [MASK]; The person in the driver's seat was [MASK]; The car was driven by [MASK]; They were [MASK]'s passengers;"
                   f"[/INST] "
                   f"Thank you, I will do accordingly, as you have instructed. "
                   f"[INST] {query} [/INST]")
@@ -95,12 +95,12 @@ class GuessSimilarityRanker(Ranker):
                 json={"inputs": inputs,
                       "parameters": {"max_new_tokens": 100}})
         except requests.exceptions.ConnectionError:
-            input("Paused due to lost connection. Press enter to continue.")
+            print("Paused due to lost connection. Press enter to continue.")
             return self.get_guesses(query)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
-            # if too many requests are made, the server will return a 429 status code
+            # if too many requests are made, the server will return a 503 status code
             print("Too many requests. Waiting 60 seconds.")
             time.sleep(60)
             return self.get_guesses(query)
@@ -113,6 +113,6 @@ class GuessSimilarityRanker(Ranker):
             r_list = r_list[0].split("\n")
 
         if len(r_list) < self.num_of_paraphrases:
-            r_list += ["MASK"] * (self.num_of_paraphrases - len(r_list))
+            r_list += ["[MASK]"] * (self.num_of_paraphrases - len(r_list))
 
         return r_list

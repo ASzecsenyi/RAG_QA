@@ -53,13 +53,13 @@ class MistralQA(QA):
                 }
             )
         except requests.exceptions.ConnectionError:
-            input("Paused due to lost connection. Press enter to continue.")
+            print("Paused due to lost connection. Press enter to continue.")
             return self.predict(question, chunks)
 
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
-            # if too many requests are made, the server will return a 429 status code
+            # if too many requests are made, the server will return a 503 status code
             print("Too many requests. Waiting 60 seconds.")
             time.sleep(60)
             return self.predict(question, chunks)

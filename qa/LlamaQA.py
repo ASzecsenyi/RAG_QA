@@ -48,7 +48,7 @@ class LlamaQA(QA):
                 json={"inputs": inputs,
                       "parameters": {"max_new_tokens": 100}})
         except requests.exceptions.ConnectionError:
-            input("Paused due to lost connection. Press enter to continue.")
+            print("Paused due to lost connection. Press enter to continue.")
             return self.predict(question, chunks)
 
         try:

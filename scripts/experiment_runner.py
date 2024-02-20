@@ -338,13 +338,13 @@ ranker = TfidfRanker(top_k=5)
 ranker1 = SentEmbeddingRanker(top_k=5)
 ranker2 = GuessSimilarityRanker(top_k=5)
 
-# mi_qa = MistralQA(name="mistralqa")
+mi_qa = MistralQA(name="mistralqa")
 lam_qa = LlamaQA(name="llamaqa")
 
 # gpt_qa = GptQA(name="gptqa")
 
 experiment = Experiment(
-    name="test_long_150_llama",
+    name="test_long_150_llama2",
     description="test",
     dataset=documents,
     chunker=[chunker, chunker2],

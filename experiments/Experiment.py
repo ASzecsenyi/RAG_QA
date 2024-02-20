@@ -12,6 +12,7 @@ from tqdm import tqdm
 from data import Document
 from retrieval import Chunker, Ranker
 from qa import QA
+from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
 
 
 def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[str, list[float]]:
@@ -153,16 +154,24 @@ class Experiment:
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
-                        chunks = self.r(ranker.rank, f"Ranking question {question}", times, query=question["question"], silenced=True)
-
+                        contexts = self.r(ranker.rank, f"Ranking question {question}", times, query=question["question"], silenced=True)
+                        if isinstance(ranker, GuessSimilarityRanker):
+                            contexts, guesses = contexts
                         for qa in self.qa:
                             # if the question does not already have an answer in results, predict one
                             if not any(result["question"] == question["question"] for result in results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"]):
-                                answer = self.r(qa.predict, "Qa", times, question=question["question"], chunks=chunks, silenced=True)
+                                answer = self.r(qa.predict, "Qa", times, question=question["question"], chunks=contexts, silenced=True)
 
-                                results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"].append(
-                                    {"question": question["question"], "answer": answer, "ground_truths": question["ground_truths"], "contexts": chunks}
-                                )
+                                result = {
+                                    "question": question["question"],
+                                    "answer": answer,
+                                    "ground_truths": question["ground_truths"],
+                                    "contexts": contexts
+                                }
+                                if isinstance(ranker, GuessSimilarityRanker):
+                                    result["guesses"] = guesses
+
+                                results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"].append(result)
                             else:
                                 # if self.verbose:
                                 print(f"Question {question['question']} already answered")
@@ -309,8 +318,17 @@ class Experiment:
                 for i, result in enumerate(results):
                     if key not in result:
                         result[key] = value[i]
+                        # if given context contains ground truth, set retrieval to 1
+                        result["retrieval"] = 0
+                        for ground_truth in result["ground_truths"]:
+                            if any(ground_truth in context for context in result["contexts"]):
+                                result["retrieval"] = 1
+                                break
+
+
 
             evaluations[result_setup] = {key: sum(value) / len(value) for key, value in evaluation.items()}
+            evaluations[result_setup]["retrieval"] = sum(result["retrieval"] for result in results) / len(results)
 
         overall = {}
 
@@ -320,11 +338,11 @@ class Experiment:
                 continue
 
             setup = "_".join(result_setup.split("_")[:-2])
-            if setup not in evaluations:
+            if setup not in overall:
                 overall[setup] = {key: 0 for key in evaluation.keys()}
+                overall[setup]["retrieval"] = 0
             for key, value in evaluation.items():
                 overall[setup][key] += value/len(self.dataset)
-
 
         self.results["evaluations"] = evaluations
         self.results["overall"] = overall
