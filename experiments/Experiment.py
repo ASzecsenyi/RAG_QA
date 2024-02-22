@@ -122,7 +122,7 @@ class Experiment:
 
         return result
 
-    def run(self) -> dict[str, dict[Any, Any]]:
+    def run(self, get_ground_ranks: bool = False) -> dict[str, dict[Any, Any]]:
         """
         Runs the experiment(s).
 
@@ -139,6 +139,7 @@ class Experiment:
             try:
                 self.load_results(get_name=False)
                 results = self.results
+                times = results["times"]
             except FileNotFoundError:
                 print("No results found, running experiment")
 
@@ -147,20 +148,39 @@ class Experiment:
                 if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for ranker in self.ranker for qa in self.qa]):
                     print(f"Results for {dataset.name}, {chunker.name} already found, skipping")
                     continue
-                chunks = self.r(chunker.chunk, f"Chunking data {dataset.name} with {chunker.name}", times, document=dataset.document)
+                chunks = self.r(chunker.chunk, f"Chunking with {chunker.name}", times, document=dataset.document)
 
                 for ranker in self.ranker:
+                    if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for qa in self.qa]):
+                        print(f"Results for {dataset.name}, {chunker.name}, {ranker.name} already found, skipping")
+                        continue
                     self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
-                        contexts = self.r(ranker.rank, f"Ranking question {question}", times, query=question["question"], silenced=True)
-                        if isinstance(ranker, GuessSimilarityRanker):
-                            contexts, guesses = contexts
+                        if not get_ground_ranks:
+                            contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True)
+                            if isinstance(ranker, GuessSimilarityRanker):
+                                contexts, guesses = contexts
+                        else:
+                            contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True, return_distances=True)
+                            if isinstance(ranker, GuessSimilarityRanker):
+                                contexts, guesses = contexts
+                            ground_rank = -1
+                            ground_distance = -1
+                            for i, context in enumerate(contexts):
+                                chunk, distance = context
+                                if any(ground_truth in chunk for ground_truth in question["ground_truths"]):
+                                    ground_rank = i
+                                    ground_distance = float(distance)
+                                    break
+                            contexts = [context[0] for context in contexts[:ranker.top_k]]
+
                         for qa in self.qa:
+
                             # if the question does not already have an answer in results, predict one
                             if not any(result["question"] == question["question"] for result in results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"]):
-                                answer = self.r(qa.predict, "Qa", times, question=question["question"], chunks=contexts, silenced=True)
+                                answer = self.r(qa.predict, f"Generating response with {qa.name}", times, question=question["question"], chunks=contexts, silenced=True)
 
                                 result = {
                                     "question": question["question"],
@@ -170,16 +190,18 @@ class Experiment:
                                 }
                                 if isinstance(ranker, GuessSimilarityRanker):
                                     result["guesses"] = guesses
+                                if get_ground_ranks:
+                                    result["ground_rank"] = ground_rank
+                                    result["ground_distance"] = ground_distance
 
                                 results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"].append(result)
                             else:
                                 # if self.verbose:
                                 print(f"Question {question['question']} already answered")
+                            results["times"] = times
                             self.results = results
 
                             self.save_results()
-
-        results["times"] = times
 
         self.results = results
         return results
@@ -298,6 +320,9 @@ class Experiment:
     def evaluate_with_rouge_score(self):
         assert self.results is not None, "Experiment must be run before evaluation"
 
+        if "evaluations" in self.results:
+            return self.results["evaluations"]
+
         evaluations = {}
 
         for result_setup, results in self.results.items():
@@ -325,10 +350,10 @@ class Experiment:
                                 result["retrieval"] = 1
                                 break
 
-
-
             evaluations[result_setup] = {key: sum(value) / len(value) for key, value in evaluation.items()}
             evaluations[result_setup]["retrieval"] = sum(result["retrieval"] for result in results) / len(results)
+            evaluations[result_setup]["ground_rank"] = sum(result.get("ground_rank", 0) for result in results) / len(results)
+            evaluations[result_setup]["ground_distance"] = sum(result.get("ground_distance", 0) for result in results) / len(results)
 
         overall = {}
 
@@ -341,6 +366,8 @@ class Experiment:
             if setup not in overall:
                 overall[setup] = {key: 0 for key in evaluation.keys()}
                 overall[setup]["retrieval"] = 0
+                overall[setup]["ground_rank"] = 0
+                overall[setup]["ground_distance"] = 0
             for key, value in evaluation.items():
                 overall[setup][key] += value/len(self.dataset)
 
