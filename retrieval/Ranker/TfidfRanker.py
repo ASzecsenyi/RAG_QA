@@ -44,9 +44,11 @@ class TfidfRanker(Ranker):
         fit_chunks = self.preprocess(chunks)
         self.vectors = self.vectorizer.fit_transform(fit_chunks)
 
-    def rank(self, query: str) -> list[str]:
+    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
         query_vector = self.vectorizer.transform([self.preprocess_chunk(query)])
         cosine_similarities = cosine_similarity(query_vector, self.vectors).flatten()
+        if return_distances:
+            return [(self.chunks[i], cosine_similarities[i]) for i in cosine_similarities.argsort()[::-1]]
         return [x for _, x in sorted(zip(cosine_similarities, self.chunks), reverse=True)][:self.top_k]
 
     def preprocess(self, chunks: list[str]) -> list[str]:
@@ -80,4 +82,9 @@ class TfidfRanker(Ranker):
         tokens = [word for word in tokens if word.isalpha()]
 
         return ' '.join(tokens)
+
+    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+        query_vectors = self.vectorizer.transform([self.preprocess_chunk(query) for query in queries])
+        cosine_similarities = cosine_similarity(query_vectors, self.vectors)
+        return [[x for _, x in sorted(zip(cosine_similarities[i], self.chunks), reverse=True)][:self.top_k] for i in range(len(queries))]
 

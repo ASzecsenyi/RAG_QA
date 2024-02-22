@@ -20,7 +20,6 @@ class SentEmbeddingRanker(Ranker):
         self.index = None
         if name is None:
             self.name += "_sent_embedding"
-        self.vectors = None
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -38,11 +37,15 @@ class SentEmbeddingRanker(Ranker):
         self.index = faiss.index_factory(embedding_size, "Flat", faiss.METRIC_INNER_PRODUCT)
         self.index.add(chunks_arr)
 
-    def rank(self, query: str) -> list[str]:
+    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
         query_vector = self.model.encode([query])
         query_arr: np.ndarray = np.vstack(query_vector, dtype="float32")
-        _, indices = self.index.search(query_arr, self.top_k)
-        return [self.chunks[i] for i in indices[0]]
+        if return_distances:
+            distances, indices = self.index.search(query_arr, len(self.chunks))
+            return [(self.chunks[i], d) for i, d in zip(indices[0], distances[0])]
+        else:
+            distances, indices = self.index.search(query_arr, self.top_k)
+            return [self.chunks[i] for i in indices[0]]
 
     def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
         query_vectors = self.model.encode(queries)

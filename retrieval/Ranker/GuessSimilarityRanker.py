@@ -52,29 +52,25 @@ class GuessSimilarityRanker(Ranker):
         self.index = faiss.index_factory(embedding_size, "Flat", faiss.METRIC_INNER_PRODUCT)
         self.index.add(chunks_arr)
 
-    def rank(self, query: str) -> list[str]:
+    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
         answers: list[str] = self.get_guesses(query)
-        # print(answers)
+        # Get vectors for each answer
         query_vectors = self.model.encode(answers)
-        query_arr: np.ndarray = np.vstack(query_vectors, dtype="float32")
+        # Convert list of vectors into a 2D array
+        query_arr = np.asarray(query_vectors, dtype="float32")
+        # Ensure query array is of correct dimension
         if query_arr.shape[1] != self.index.d:
             print("mismatch:", query_arr.shape[1], self.index.d)
-            # query_arr = np.resize(query_arr, (query_arr.shape[0], self.index.d))
-        _, indices = self.index.search(query_arr, len(self.chunks))
-        ranks = [[self.chunks[i] for i in indices[j]] for j in range(len(answers))]
-        # calculate mean similarity for each chunk per answer
-        ranks = [
-            [(np.mean([np.inner(query_vectors[j], self.model.encode([chunk])[0]) for chunk in rank]), i) for i, rank in
-             enumerate(ranks) for j in range(len(query_vectors))]]
-        # sort by mean similarity
-        ranks = [sorted(rank, key=lambda x: x[0]) for rank in ranks]
-        # get the sorted indices
-        ranks = [[index for _, index in rank] for rank in ranks]
-        # get the top k chunks7
-        if self.top_k > len(self.chunks):
-            return self.chunks
-
-        return [self.chunks[i] for i in ranks[0][-self.top_k:] if i in range(len(self.chunks))], answers
+        # Search the chunk indexes in the index near this query array
+        distances, indices = self.index.search(query_arr, len(self.chunks))
+        # calculate the mean similarity for each chunk
+        ranks_mean = np.mean(distances, axis=0)
+        # Sort by mean similarity
+        sorted_indices = np.argsort(ranks_mean)
+        # Return the chunks in order of similarity
+        if return_distances:
+            return [(self.chunks[i], ranks_mean[i]) for i in sorted_indices], answers
+        return [self.chunks[i] for i in sorted_indices[:self.top_k]], answers
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
@@ -101,8 +97,8 @@ class GuessSimilarityRanker(Ranker):
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             # if too many requests are made, the server will return a 503 status code
-            print("Too many requests. Waiting 60 seconds.")
-            time.sleep(60)
+            print("Too many requests. Waiting 10 seconds.")
+            time.sleep(10)
             return self.get_guesses(query)
 
         response_str = response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
@@ -116,3 +112,10 @@ class GuessSimilarityRanker(Ranker):
             r_list += ["[MASK]"] * (self.num_of_paraphrases - len(r_list))
 
         return r_list
+
+    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+        ranks = []
+        for query in queries:
+            query_ranks = self.rank(query)
+            ranks.append(query_ranks)
+        return ranks
