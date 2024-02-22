@@ -56,8 +56,8 @@ class LlamaQA(QA):
         except requests.exceptions.HTTPError as e:
             print(e)
             # if too many requests are made, the server will return a 429 status code
-            print("Too many requests. Waiting 60 seconds.")
-            time.sleep(60)
+            print("Too many requests. Waiting 10 seconds.")
+            time.sleep(10)
             return self.predict(question, chunks)
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
