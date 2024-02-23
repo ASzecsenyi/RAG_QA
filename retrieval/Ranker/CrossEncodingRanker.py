@@ -19,7 +19,7 @@ class CrossEncodingRanker(Ranker):
         super().__init__(top_k, name)
         self.index = None
         if name is None:
-            self.name += "_sent_embedding"
+            self.name += ""
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -28,10 +28,10 @@ class CrossEncodingRanker(Ranker):
     def init_chunks(self, chunks: list[str]):
         self.chunks: list[str] = chunks
 
-    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
         scores = self.model.predict([[query, chunk] for chunk in self.chunks])
         indices = np.argsort(scores)[::-1]
-        if return_distances:
+        if return_similarities:
             return [(self.chunks[i], scores[i]) for i in indices]
         return [self.chunks[i] for i in indices[:self.top_k]]
 

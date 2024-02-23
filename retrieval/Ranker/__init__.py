@@ -26,13 +26,13 @@ class Ranker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
         """
         Ranks the chunks based on a query.
         :param query: The query
         :type query: str
-        :param return_distances: Whether to return the distances/similarities, defaults to False
-        :type return_distances: bool, optional
+        :param return_similarities: Whether to return the distances/similarities, defaults to False
+        :type return_similarities: bool, optional
 
         :return: The top-k chunks ordered by relevance (descending)
         """
@@ -63,8 +63,8 @@ class RandomRanker(Ranker):
     def init_chunks(self, chunks: list[str]):
         self.chunks = chunks
 
-    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
-        if return_distances:
+    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+        if return_similarities:
             order = random.sample(range(len(self.chunks)), len(self.chunks))
             return [(self.chunks[i], 1 - i / len(self.chunks)) for i in order]
         return random.sample(self.chunks, self.top_k)

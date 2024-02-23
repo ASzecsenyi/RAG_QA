@@ -33,7 +33,7 @@ class TfidfRanker(Ranker):
         :type kwargs: dict
         """
         super().__init__(top_k, name)
-        if name is None:
+        if name is None and not kwargs == {}:
             self.name += f"_{kwargs}"
         self.vectorizer = TfidfVectorizer(**kwargs)
         self.chunks = None
@@ -44,10 +44,10 @@ class TfidfRanker(Ranker):
         fit_chunks = self.preprocess(chunks)
         self.vectors = self.vectorizer.fit_transform(fit_chunks)
 
-    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
         query_vector = self.vectorizer.transform([self.preprocess_chunk(query)])
         cosine_similarities = cosine_similarity(query_vector, self.vectors).flatten()
-        if return_distances:
+        if return_similarities:
             return [(self.chunks[i], cosine_similarities[i]) for i in cosine_similarities.argsort()[::-1]]
         return [x for _, x in sorted(zip(cosine_similarities, self.chunks), reverse=True)][:self.top_k]
 

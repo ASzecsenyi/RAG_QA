@@ -1,34 +1,16 @@
-import faiss
 import numpy as np
-import torch
-from sentence_transformers import SentenceTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-import string
 import nltk
-import contractions
-from nltk.stem import WordNetLemmatizer
-from nltk.stem import PorterStemmer
 
 from retrieval.Ranker import Ranker
-from retrieval.Ranker.SentEmbeddingRanker import SentEmbeddingRanker
+from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-# if not nltk.data.find('corpora/wordnet'):
-#    nltk.download('wordnet')
 
 
 class HybridRanker(Ranker):
 
     def __init__(self, top_k: int, name=None,
                  sparse: Ranker = TfidfRanker(top_k=5),
-                 dense: Ranker = SentEmbeddingRanker(top_k=5),
+                 dense: Ranker = CrossEncodingRanker(top_k=5),
                  sparse_weight: float = 0.5,
                  **kwargs):
         """
@@ -40,7 +22,7 @@ class HybridRanker(Ranker):
         """
         super().__init__(top_k, name)
         if name is None:
-            self.name += "_hybrid"
+            self.name += f"X_{sparse.name}_{dense.name}_{sparse_weight}"
 
         self.sparse_ranker = sparse
         self.dense_ranker = dense
@@ -51,10 +33,10 @@ class HybridRanker(Ranker):
         self.sparse_ranker.init_chunks(chunks)
         self.dense_ranker.init_chunks(chunks)
 
-    def rank(self, query: str, return_distances: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
         # [(chunk, sim), ...]
-        sparse_rank: list[tuple[str, float]] = self.sparse_ranker.rank(query, return_distances=True)
-        dense_rank: list[tuple[str, float]] = self.dense_ranker.rank(query, return_distances=True)
+        sparse_rank: list[tuple[str, float]] = self.sparse_ranker.rank(query, return_similarities=True)
+        dense_rank: list[tuple[str, float]] = self.dense_ranker.rank(query, return_similarities=True)
 
         # print("")
         # print(sparse_rank[:5])
@@ -86,11 +68,11 @@ class HybridRanker(Ranker):
             current_chunk = sparse_rank[i][0]
             sparse_sim = sparse_rank[i][1]
             dense_sim = dense_rank[dense_chunks.index(current_chunk)][1]
-            combined_sim = self.sparse_weight * sparse_sim + (1 - self.sparse_weight) * (1 - dense_sim)
+            combined_sim = self.sparse_weight * sparse_sim + (1 - self.sparse_weight) * dense_sim
             combined_rank.append((current_chunk, combined_sim))
         combined_rank.sort(key=lambda x: x[1], reverse=True)
 
-        if return_distances:
+        if return_similarities:
             return combined_rank
 
         return [x[0] for x in combined_rank[:self.top_k]]

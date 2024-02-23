@@ -13,7 +13,7 @@ def answer_single_question(
         question: str,
         dataset: Union[Document, str],
         chunker: Chunker = CharChunker(chunk_length=100, sliding_window_size=0.0),
-        ranker: Ranker = TfidfRanker(5),
+        ranker: Ranker = TfidfRanker(top_k=5),
         qa: QA = MistralQA("default"),
 
 ):

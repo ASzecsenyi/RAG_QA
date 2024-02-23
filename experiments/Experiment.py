@@ -3,6 +3,7 @@ import os
 import time
 from datetime import datetime
 
+import numpy as np
 from ragas import evaluate
 from datasets import Dataset
 from typing import Union, Any
@@ -163,7 +164,7 @@ class Experiment:
                             if isinstance(ranker, GuessSimilarityRanker):
                                 contexts, guesses = contexts
                         else:
-                            contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True, return_distances=True)
+                            contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True, return_similarities=True)
                             if isinstance(ranker, GuessSimilarityRanker):
                                 contexts, guesses = contexts
                             ground_rank = -1
@@ -174,6 +175,13 @@ class Experiment:
                                     ground_rank = i
                                     ground_distance = float(distance)
                                     break
+
+                            # normalise ground rank
+                            ground_rank /= len(contexts)
+                            # normalise ground distance
+                            ground_distance = (ground_distance - min([distance for _, distance in contexts])) / (max([distance for _, distance in contexts]) - min([distance for _, distance in contexts]))
+                            # replace NaNs with 0
+                            ground_distance = 0 if np.isnan(ground_distance) else ground_distance
                             contexts = [context[0] for context in contexts[:ranker.top_k]]
 
                         for qa in self.qa:
