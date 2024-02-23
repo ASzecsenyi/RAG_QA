@@ -39,32 +39,36 @@ class GuessSimilarityRanker(Ranker):
         self.chunks: list[str] = chunks
         self.model.init_chunks(chunks)
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> tuple[list[str], list[str]] | tuple[list[tuple[str, float]], list[str]]:
         answers: list[str] = self.get_guesses(query)
         # Get vectors for each answer
         scores = []
         for answer in answers:
             scores.append(self.model.rank(answer, return_similarities=True))
         # calculate the mean similarity for each chunk
-        ranks_mean = np.mean([np.array([score[1] for score in chunk_scores]) for chunk_scores in scores], axis=0)
-        # Sort by mean similarity
-        sorted_indices = np.argsort(ranks_mean)[::-1]
-        # Return the chunks in order of similarity
+        scores = [{chunk: chunk_scores for chunk, chunk_scores in score} for score in scores]
+        mean_scores = {}
+        for chunk in self.chunks:
+            mean_scores[chunk] = np.mean([score.get(chunk, 0) for score in scores])
+        mean_scores = sorted(mean_scores.items(), key=lambda x: x[1], reverse=True)
         if return_similarities:
-            return [(self.chunks[i], ranks_mean[i]) for i in sorted_indices], answers
-        return [self.chunks[i] for i in sorted_indices[:self.top_k]], answers
+            return mean_scores, answers
+        return [x for x, _ in mean_scores][:self.top_k], answers
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
-                  f"Come up with {self.num_of_paraphrases} different ways the sentence that contains the answer might look like. "
-                  f"You don't have to come up with an answer, and you can replace it with the word '[MASK]' in each of the sentences."
+                  f"Come up with {self.num_of_paraphrases} different to answer it. "
+                  f"But there is a catch: "
+                  f"- you should try to use different words each time, and"
+                  f"- you must use the [UNKNOWN] token to cover the actual word or words that answer the question. "
                   f"Separate the sentences with a semicolon. "
                   f"Example: "
                   f"Q: Who was driving th vehicle?"
-                  f"A: MASK was driving the vehicle; The person behind the wheel was [MASK]; The person in the driver's seat was [MASK]; The car was driven by [MASK]; They were [MASK]'s passengers;"
+                  f"A: [UNKNOWN] was driving the vehicle; The person behind the wheel was [UNKNOWN]; [UNKNOWN] was in the driver's seat; The car was driven by [UNKNOWN]; They were [UNKNOWN]'s passengers;"
                   f"[/INST] "
                   f"Thank you, I will do accordingly, as you have instructed. "
-                  f"[INST] {query} [/INST]")
+                  f"[INST]Q: {query} "
+                  f"A: [/INST]")
 
         try:
             response = requests.post(
@@ -92,9 +96,7 @@ class GuessSimilarityRanker(Ranker):
         if len(r_list) == 1:
             r_list = r_list[0].split(";")
 
-        if len(r_list) < self.num_of_paraphrases:
-            r_list += ["[UNKNOWN]"] * (self.num_of_paraphrases - len(r_list))
-
+        print("")
         print(r_list)
 
         return r_list
