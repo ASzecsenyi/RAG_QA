@@ -55,7 +55,11 @@ class HybridRanker(Ranker):
         dense_rank_min = min(dense_rank, key=lambda x: x[1])[1]
 
         sparse_rank = [(x[0], (x[1] - sparse_rank_min) / (sparse_rank_max - sparse_rank_min)) for x in sparse_rank]
+        # replace NaNs with 0
+        sparse_rank = [(x[0], 0 if np.isnan(x[1]) else x[1]) for x in sparse_rank]
         dense_rank = [(x[0], (x[1] - dense_rank_min) / (dense_rank_max - dense_rank_min)) for x in dense_rank]
+        # replace NaNs with 0
+        dense_rank = [(x[0], 0 if np.isnan(x[1]) else x[1]) for x in dense_rank]
 
         # print("")
         # print(sparse_rank[:5])
