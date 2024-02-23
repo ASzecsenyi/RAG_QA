@@ -57,14 +57,12 @@ class GuessSimilarityRanker(Ranker):
 
     def get_guesses(self, query: str) -> list[str]:
         inputs = (f"<s>[INST] You will receive a question. "
-                  f"Come up with {self.num_of_paraphrases} different to answer it. "
-                  f"But there is a catch: "
-                  f"- you should try to use different words each time, and"
-                  f"- you must use the [UNKNOWN] token to cover the actual word or words that answer the question. "
-                  f"Separate the sentences with a semicolon. "
+                  f"Come up with {self.num_of_paraphrases} different to rephrase it. "
+                  f"You should try to simplify the question as much as possible, so that it is easy to answer. "
+                  f"Separate the versions with a semicolon. "
                   f"Example: "
                   f"Q: Who was driving th vehicle?"
-                  f"A: [UNKNOWN] was driving the vehicle; The person behind the wheel was [UNKNOWN]; [UNKNOWN] was in the driver's seat; The car was driven by [UNKNOWN]; They were [UNKNOWN]'s passengers;"
+                  f"A: Who was driving?; Who was the pilot?; Who was their driver?; Who was the chauffeur?; Who drove them there?"
                   f"[/INST] "
                   f"Thank you, I will do accordingly, as you have instructed. "
                   f"[INST]Q: {query} "
