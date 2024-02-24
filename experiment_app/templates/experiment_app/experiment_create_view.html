@@ -73,10 +73,6 @@
             margin-bottom: 15px; /* Spacing between cards */
         }
 
-        .card-wrapper:hover {
-            height: 70px;
-        }
-
         .card.compact .card-body {
             display: none; /* Hide the body initially */
         }
@@ -101,7 +97,7 @@
         }
 
         .component-title {
-            padding: 10px; /* Adjust as per your styling needs */
+            /*padding: 10px; /* Adjust as per your styling needs */
             font-weight: bold;
         }
 
@@ -421,8 +417,6 @@
             value.forEach((val, index) => {
                 // val is a dict, we want the keys question, answer, ground_truths, contexts and fmeasure
                 
-                
-                
                 let html = `
                     <div class="card mb-3">
                         <div class="card-header">
@@ -432,13 +426,29 @@
                             <p><strong>Question:</strong> ${val.question}</p>
                             <p><strong>Answer:</strong> ${val.answer.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)}</p>
                             <p><strong>Ground Truths:</strong> <strong>${val.ground_truths}</strong></p>
-                            <p><strong>Contexts:</strong> ${val.contexts.map(context => context.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)).join(', ')}</p>
+                            <p><strong>Contexts:</strong> ${val.contexts.map(context => context.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)).join('<br>')}</p>
                             <p><strong>Precision:</strong> ${val.precision}</p>
                             <p><strong>Recall:</strong> ${val.recall}</p>
                             <p><strong>F-Measure:</strong> ${val.fmeasure}</p>
                         </div>
                     </div>
                 `;
+                // if ground_truths is empty (i.e. it is a list of length 1 with an empty string element), 
+                // then we don't want to display it or the metrics
+                if (val.ground_truths.length === 1 && val.ground_truths[0] === '') {
+                    html = `
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Question ${index + 1}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Question:</strong> ${val.question}</p>
+                                <p><strong>Answer:</strong> ${val.answer}</p>
+                                <p><strong>Contexts:</strong> ${val.contexts.join('<br>')}</p>
+                            </div>
+                        </div>
+                    `;
+                }
                 answer.innerHTML += html;
             });
             answerDiv.appendChild(answer);
@@ -447,6 +457,29 @@
     });
 
     $(document).ready(function () {
+        // Store the original width of each .card.compact in a data attribute
+        $('.card.compact').each(function() {
+            var originalWidth = $(this).width();
+            var originalHeight = $(this).height();
+            $(this).data('originalWidth', originalWidth);
+            $(this).data('originalHeight', originalHeight);
+        });
+    
+        $('.card-wrapper').hover(
+            function() {
+                // On mouse in, get original width of .card.compact from data attribute
+                var originalWidth = $(this).find('.card.compact').data('originalWidth');
+                var originalHeight = $(this).find('.card.compact').data('originalHeight');
+                // Set the width of .card-wrapper to the original width of .card.compact
+                $(this).css('width', originalWidth);
+                $(this).css('height', originalHeight);
+            },
+            function() {
+                // On mouse out, reset the width of .card-wrapper
+                $(this).css('width', '');
+                $(this).css('height', '');
+            }
+        );
         var answerDiv = document.getElementById('answer');
         var textContent = answerDiv.textContent || answerDiv.innerText;
         textContent = textContent.trim();
