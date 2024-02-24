@@ -11,9 +11,15 @@ class LlamaQA(QA):
     Llama QA model.
     """
 
-    def __init__(self, name: str, api_key: str = None):
+    default_prompt = ("<s>[INST] {chunks} [/INST] "
+                      "Thank you, I will now answer your question based on this information with a single short sentence. "
+                      "</s><s>"
+                      "[INST] {question} [/INST]")
+
+    def __init__(self, name: str, prompt: str = default_prompt, api_key: str = None):
         super().__init__(name)
         self.api_key = api_key
+        self.prompt = prompt
         if api_key is None:
             try:
                 self.api_key = os.environ["HUGGINGFACE_API_KEY"]
@@ -37,10 +43,9 @@ class LlamaQA(QA):
         :rtype: str
         """
 
-        inputs = (f"<s>[INST] {chunks} [/INST] "
-                  f"Thank you, I will now very briefly answer your question based on this information. </s><s>"
-                  f"[INST] {question} [/INST]")
-        time.sleep(1)
+        inputs = self.prompt.format(chunks=" ".join(chunks), question=question)
+
+        time.sleep(0.1)
         try:
             response = requests.post(
                 "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat-hf",
@@ -61,3 +66,4 @@ class LlamaQA(QA):
             return self.predict(question, chunks)
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
+

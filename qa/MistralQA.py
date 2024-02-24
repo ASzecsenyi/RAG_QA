@@ -11,9 +11,26 @@ class MistralQA(QA):
     Mistral QA model.
     """
 
-    def __init__(self, name: str, api_key: str = None):
+    default_prompt = (
+        "<s>[INST] You are a question answering agent."
+        "Generate your response by following the steps below: "
+        "1. Read the context and the question. "
+        "2. Select the most relevant information from the context. "
+        "3. Determine whether the question can be answered based on the context. "
+        "4. If the question can be answered, generate a draft answer. "
+        "5. Validate that the draft answer is completely grounded in the context. "
+        "6. Generate your final answer and include the exact text from the context that supports your answer. Generate a single-sentence response that is clear, concise, and helpful. "
+        "7. If the question cannot be answered with the context, say [UNKNOWN]. This will be your final answer in this case. "
+        "8. Only show your final answer! Do not provide any explanation or reasoning. "
+        ""
+        "CONTEXT: {chunks} "
+        ""
+        "QUESTION: {question}[/INST]")
+
+    def __init__(self, name: str, prompt: str = default_prompt, api_key: str = None):
         super().__init__(name)
         self.api_key = api_key
+        self.prompt = prompt
         if api_key is None:
             try:
                 self.api_key = os.environ["HUGGINGFACE_API_KEY"]
@@ -37,10 +54,9 @@ class MistralQA(QA):
         :rtype: str
         """
 
-        inputs = (f"<s>[INST] {chunks} [/INST] "
-                  f"Thank you, I will now very briefly answer your question based on this information. "
-                  f"[INST] {question} [/INST]")
-        # time.sleep(1)
+        inputs = self.prompt.format(chunks=" ".join(chunks), question=question)
+
+        time.sleep(0.1)
         try:
             response = requests.post(
                 "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",

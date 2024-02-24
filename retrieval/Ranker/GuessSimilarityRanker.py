@@ -10,7 +10,28 @@ from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
 
 
 class GuessSimilarityRanker(Ranker):
-    def __init__(self, top_k: int, num_of_paraphrases: int = 5, ranker: Ranker = CrossEncodingRanker(top_k=5), api_key: str = None, name=None, **kwargs):
+    default_prompt = ("<s>[INST] You will receive a question. "
+                      "Come up with {num_of_paraphrases} different to rephrase it. "
+                      "You should try to simplify the question as much as possible, so that it is easy to answer. "
+                      "Separate the versions with a semicolon. "
+                      "Example: "
+                      "Q: Who was driving th vehicle?"
+                      "A: Who was driving?; Who was the pilot?; Who was their driver?; Who was the chauffeur?; Who drove them there?"
+                      "[/INST] "
+                      "Thank you, I will do accordingly, as you have instructed. "
+                      "[INST]Q: {query} "
+                      "A: [/INST]")
+
+    def __init__(
+            self,
+            top_k: int,
+            num_of_paraphrases: int = 5,
+            ranker: Ranker = CrossEncodingRanker(top_k=5),
+            prompt: str = default_prompt,
+            api_key: str = None,
+            name=None,
+            **kwargs
+    ):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
@@ -20,6 +41,7 @@ class GuessSimilarityRanker(Ranker):
         """
         super().__init__(top_k, name=name,)
         self.api_key = api_key
+        self.prompt = prompt
         if api_key is None:
             try:
                 self.api_key = os.environ["HUGGINGFACE_API_KEY"]
@@ -30,8 +52,6 @@ class GuessSimilarityRanker(Ranker):
         if name is None:
             self.name += f"_{ranker.name}" + f"_{kwargs}" if kwargs else ""
         self.num_of_paraphrases = num_of_paraphrases
-
-        device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.model = ranker
 
@@ -56,17 +76,7 @@ class GuessSimilarityRanker(Ranker):
         return [x for x, _ in mean_scores][:self.top_k], answers
 
     def get_guesses(self, query: str) -> list[str]:
-        inputs = (f"<s>[INST] You will receive a question. "
-                  f"Come up with {self.num_of_paraphrases} different to rephrase it. "
-                  f"You should try to simplify the question as much as possible, so that it is easy to answer. "
-                  f"Separate the versions with a semicolon. "
-                  f"Example: "
-                  f"Q: Who was driving th vehicle?"
-                  f"A: Who was driving?; Who was the pilot?; Who was their driver?; Who was the chauffeur?; Who drove them there?"
-                  f"[/INST] "
-                  f"Thank you, I will do accordingly, as you have instructed. "
-                  f"[INST]Q: {query} "
-                  f"A: [/INST]")
+        inputs = self.prompt.format(num_of_paraphrases=self.num_of_paraphrases, query=query)
 
         try:
             response = requests.post(
@@ -93,9 +103,6 @@ class GuessSimilarityRanker(Ranker):
             r_list = r_list[0].split("\n")
         if len(r_list) == 1:
             r_list = r_list[0].split(";")
-
-        print("")
-        print(r_list)
 
         return r_list
 
