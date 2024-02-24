@@ -25,8 +25,15 @@ class Document(ABC):
         self.document: str = document
         self.questions: list[dict[str, Any]] = questions
 
+        assert isinstance(self.document, str), "document must be a string"
+        assert isinstance(self.questions, list), "questions must be a list"
+        assert all(isinstance(question, dict) for question in self.questions), "questions must be a list of dictionaries"
+
         assert all("question" in question for question in self.questions), "questions must have a question field"
+        assert all(isinstance(question["question"], str) for question in self.questions), "question fields must be strings"
         assert all("ground_truths" in question for question in self.questions), "questions must have a ground_truths field"
+        assert all(isinstance(question["ground_truths"], list) for question in self.questions), "ground_truths fields must be lists"
+        assert all(all(isinstance(ground_truth, str) for ground_truth in question["ground_truths"]) for question in self.questions), f"ground_truths fields must be lists of strings, got {type(self.questions[0]['ground_truths'][0])}"
 
     def __repr__(self):
         return f"Document(name={self.name}, document={self.document[:10]}, questions={self.questions})"
