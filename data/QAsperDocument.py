@@ -28,11 +28,16 @@ class QAsperDocument(Document):
         print(name)
 
         # get the story
-        story = qasper[split].filter(lambda x: x['id'] == story_id)
+        story = None
 
-        assert len(story) == 1, "story_id must be in the dataset"
+        for i, s in enumerate(qasper[split]):
+            if s['id'] == story_id:
+                story = s
+                break
 
-        story = story[0]
+        # assert len(story) == 1, "story_id must be in the dataset"
+
+        # story = story[0]
 
         # it is assumed that all story_text instances with the same story_id are the same
 

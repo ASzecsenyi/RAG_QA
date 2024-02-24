@@ -22,7 +22,7 @@ class HybridRanker(Ranker):
         """
         super().__init__(top_k, name)
         if name is None:
-            self.name += f"X_{sparse.name}_{dense.name}_{sparse_weight}"
+            self.name += f"_{sparse.name}_{dense.name}_{sparse_weight}"
 
         self.sparse_ranker = sparse
         self.dense_ranker = dense
