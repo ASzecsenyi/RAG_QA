@@ -43,6 +43,8 @@ class QAsperDocument(Document):
 
         document = '\n\n'.join(['\n'.join(section) for section in story['full_text']['paragraphs']])
 
+        self.paragraphs = {a: ' '.join(b) for a, b in zip(story['full_text']['section_name'], story['full_text']['paragraphs'])}
+
         questions: list[dict[str, Any]] = []
         for i, question in enumerate(story['qas']['question']):
             # get texts at the answer token ranges

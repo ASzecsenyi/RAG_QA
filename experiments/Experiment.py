@@ -14,6 +14,7 @@ from data import Document
 from retrieval import Chunker, Ranker
 from qa import QA
 from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
+from retrieval.Ranker.PromptRanker import PromptRanker
 
 
 def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[str, list[float]]:
@@ -145,6 +146,8 @@ class Experiment:
                 print("No results found, running experiment")
 
         for dataset in self.dataset:
+            if hasattr(dataset, "paragraphs"):
+                paragraphs = dataset.paragraphs
             for chunker in self.chunker:
                 if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for ranker in self.ranker for qa in self.qa]):
                     print(f"Results for {dataset.name}, {chunker.name} already found, skipping")
@@ -155,17 +158,21 @@ class Experiment:
                     if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for qa in self.qa]):
                         print(f"Results for {dataset.name}, {chunker.name}, {ranker.name} already found, skipping")
                         continue
-                    self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
+                    if isinstance(ranker, PromptRanker) and hasattr(dataset, "paragraphs"):
+                        self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times,
+                               chunks=chunks, paragraphs=paragraphs)
+                    else:
+                        self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
                         if not get_ground_ranks:
                             contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True)
-                            if isinstance(ranker, GuessSimilarityRanker):
+                            if isinstance(ranker, GuessSimilarityRanker) or isinstance(ranker, PromptRanker):
                                 contexts, guesses = contexts
                         else:
                             contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True, return_similarities=True)
-                            if isinstance(ranker, GuessSimilarityRanker):
+                            if isinstance(ranker, GuessSimilarityRanker) or isinstance(ranker, PromptRanker):
                                 contexts, guesses = contexts
                             ground_rank = -1
                             ground_distance = -1
@@ -196,7 +203,7 @@ class Experiment:
                                     "ground_truths": question["ground_truths"],
                                     "contexts": contexts
                                 }
-                                if isinstance(ranker, GuessSimilarityRanker):
+                                if isinstance(ranker, GuessSimilarityRanker) or isinstance(ranker, PromptRanker):
                                     result["guesses"] = guesses
                                 if get_ground_ranks:
                                     result["ground_rank"] = ground_rank

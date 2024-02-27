@@ -1,5 +1,4 @@
 import numpy as np
-import nltk
 
 from retrieval.Ranker import Ranker
 from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
