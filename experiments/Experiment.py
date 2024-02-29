@@ -55,7 +55,7 @@ def evaluate_ragas_score(results_dataset: Dataset):
     :rtype: dict[str, dict[str, float]]
     """
 
-    return evaluate(results_dataset)
+    return evaluate(dataset=results_dataset)
 
 
 class Experiment:

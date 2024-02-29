@@ -254,10 +254,22 @@
                 <div class="card mb-3 compact">
                     <div class="card-header component-title">Text ${TextDocumentIndexCount + 1}</div>
                     <div class="card-body">
-                        <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
-                        <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" placeholder="File path" class="form-control mb-2" value="${file_path}">
-                        <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" placeholder="Question" class="form-control mb-2" value="${question}">
-                        <input type="text" name="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" placeholder="Text Document Name" class="form-control mb-2" value="${textdoc_name}">
+                        <div class="form-floating mb-3">
+                            <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
+                            <label for="ExperimentTextDocument_file_${TextDocumentIndexCount}">File</label>
+                        </div>       
+                        <div class="form-floating mb-3">
+                            <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" class="form-control mb-2" value="${file_path}">
+                            <label for="ExperimentTextDocument_file_path_${TextDocumentIndexCount}">File Path</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" id="ExperimentTextDocument_question_${TextDocumentIndexCount}" class="form-control mb-2" value="${question}">
+                            <label for="ExperimentTextDocument_question_${TextDocumentIndexCount}">Question</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" name="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" id="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" class="form-control mb-2" value="${textdoc_name}">
+                            <label for="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}">Text Document Name</label>
+                        </div>
                         <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
                     </div>
                 </div>
@@ -277,8 +289,14 @@
         <div class="card mb-3 compact">
             <div class="card-header component-title">NewsQA ${NewsQADocumentIndexCount + 1}</div>
             <div class="card-body">
-                <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" placeholder="story_id" class="form-control mb-2" value="${story_id}">
-                <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" placeholder="NewsQA Name" class="form-control mb-2" value="${newsqa_name}">
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" class="form-control mb-2" value="${story_id}">
+                    <label for="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}">Story ID</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" class="form-control mb-2" value="${newsqa_name}">
+                    <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}">NewsQA Name</label>
+                </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
             </div>
         </div>
@@ -300,13 +318,25 @@
         <div class="card mb-3 compact">
             <div class="card-header component-title">${chunker_type} ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
-                <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
-                    <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
-                    <option value="SentChunker" ${chunker_type==='SentChunker' ? 'selected=""' : '' }>SentChunker</option>
-                </select>
-                <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" value=${chunk_length} placeholder="Chunk Length" class="form-control mb-2">
-                <input type="text" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" value=${sliding_window_size} placeholder="Sliding Window Size" class="form-control mb-2">
-                <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" value="${chunker_name}" placeholder="Chunker Name" class="form-control mb-2">
+                <div class="form-floating mb-3">
+                    <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" id="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
+                        <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
+                        <option value="SentChunker" ${chunker_type==='SentChunker' ? 'selected=""' : '' }>SentChunker</option>
+                    </select>
+                    <label for="ExperimentChunker_chunker_type_${ChunkerIndexCount}">Chunker Type</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" id="ExperimentChunker_chunk_length_${ChunkerIndexCount}" class="form-control mb-2" value="${chunk_length}">
+                    <label for="ExperimentChunker_chunk_length_${ChunkerIndexCount}">Chunk Length</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="number" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" id="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" class="form-control mb-2" value="${sliding_window_size}">
+                    <label for="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}">Sliding Window Size</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" id="ExperimentChunker_chunker_name_${ChunkerIndexCount}" class="form-control mb-2" value="${chunker_name}">
+                    <label for="ExperimentChunker_chunker_name_${ChunkerIndexCount}">Chunker Name</label>
+                </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
             </div>
         </div>
@@ -327,13 +357,22 @@
         <div class="card mb-3 compact">
             <div class="card-header component-title">${ranker_type} ${RankerIndexCount + 1}</div>
             <div class="card-body">
-                <select name="ExperimentRanker_ranker_type_${RankerIndexCount}"  class="form-select mb-2">
-                    <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
-                    <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
-                    <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
-                </select>
-                <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" value=${top_k} placeholder="Top K" class="form-control mb-2">
-                <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" value="${ranker_name}" placeholder="Ranker Name" class="form-control mb-2">
+                <div class="form-floating mb-3">
+                    <select name="ExperimentRanker_ranker_type_${RankerIndexCount}" id="ExperimentRanker_ranker_type_${RankerIndexCount}" class="form-select mb-2">
+                        <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
+                        <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
+                        <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
+                    </select>
+                    <label for="ExperimentRanker_ranker_type_${RankerIndexCount}">Ranker Type</label>
+                </div>  
+                <div class="form-floating mb-3">
+                    <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" id="ExperimentRanker_top_k_${RankerIndexCount}" class="form-control mb-2" value="${top_k}">
+                    <label for="ExperimentRanker_top_k_${RankerIndexCount}">Top K</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" id="ExperimentRanker_ranker_name_${RankerIndexCount}" class="form-control mb-2" value="${ranker_name}">
+                    <label for="ExperimentRanker_ranker_name_${RankerIndexCount}">Ranker Name</label>   
+                </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
             </div>
         </div>
@@ -353,12 +392,18 @@
         <div class="card mb-3 compact">
             <div class="card-header component-title">${model_type} ${QAIndexCount + 1}</div>
             <div class="card-body">
-                <select name="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
-                    <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
-                    <option value="GptQA" ${model_type==='GptQA' ? 'selected=""' : '' }>GptQA</option>
-                    <option value="LlamaQA" ${model_type==='LlamaQA' ? 'selected=""' : '' }>LlamaQA</option>
-                </select>
-                <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" value="${model_name}" placeholder="Model Name" class="form-control mb-2">
+                <div class="form-floating mb-3">
+                    <select name="ExperimentQA_model_type_${QAIndexCount}" id="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
+                        <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
+                        <option value="GptQA" ${model_type==='GptQA' ? 'selected=""' : '' }>GptQA</option>
+                        <option value="LlamaQA" ${model_type==='LlamaQA' ? 'selected=""' : '' }>LlamaQA</option>
+                    </select>
+                    <label for="ExperimentQA_model_type_${QAIndexCount}">Model Type</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" id="ExperimentQA_model_name_${QAIndexCount}" class="form-control mb-2" value="${model_name}">
+                    <label for="ExperimentQA_model_name_${QAIndexCount}">Model Name</label>
+                </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
             </div>
         </div>

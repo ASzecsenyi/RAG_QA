@@ -79,7 +79,7 @@ def experiment_create_view(request):
                 chunker=chunkers,
                 ranker=rankers,
                 qa=qas,
-                autoload=False
+                # autoload=False
             )
 
             # print(experiment_run)
