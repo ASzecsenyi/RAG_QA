@@ -208,11 +208,12 @@
                             <div class="col">
                                 <div id="results" class="container mt-5" style="overflow-wrap: break-word; height: 80vh;" data-bs-theme="light">
                                     <div class="row">
+                                        Average over all
                                         <div class="col">
                                             <div class="form-check">
                                                 <input class="form-check-input agg-res-updater" type="checkbox" value="" id="ChunkerCheck">
                                                 <label class="form-check-label" for="ChunkerCheck">
-                                                  ChunkerCheck
+                                                  Chunkers
                                                 </label>
                                             </div>
                                         </div>
@@ -220,7 +221,7 @@
                                             <div class="form-check">
                                                 <input class="form-check-input agg-res-updater" type="checkbox" value="" id="RankerCheck">
                                                 <label class="form-check-label" for="RankerCheck">
-                                                  RankerCheck
+                                                  Rankers
                                                 </label>
                                             </div>
                                         </div>
@@ -228,15 +229,15 @@
                                             <div class="form-check">
                                                 <input class="form-check-input agg-res-updater" type="checkbox" value="" id="QACheck">
                                                 <label class="form-check-label" for="QACheck">
-                                                  QACheck
+                                                  QAs
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col">
                                             <div class="form-check">
-                                                <input class="form-check-input agg-res-updater" type="checkbox" value="" id="DocumentCheck">
+                                                <input class="form-check-input agg-res-updater document-aggr-res-updater" type="checkbox" value="" id="DocumentCheck">
                                                 <label class="form-check-label" for="DocumentCheck">
-                                                  DocumentCheck
+                                                  Documents
                                                 </label>
                                             </div>
                                         </div>
@@ -252,15 +253,15 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        
+
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-        
+
 
 
 <script>
@@ -330,19 +331,19 @@
                     <div class="card-header component-title">Text ${TextDocumentIndexCount + 1}</div>
                     <div class="card-body">
                         <div class="form-floating mb-3">
-                            <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
+                            <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2 saveable-input" accept=".txt" value="${fileName}">
                             <label for="ExperimentTextDocument_file_${TextDocumentIndexCount}">File</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" class="form-control mb-2" value="${file_path}">
+                            <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${file_path}">
                             <label for="ExperimentTextDocument_file_path_${TextDocumentIndexCount}">File Path</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" id="ExperimentTextDocument_question_${TextDocumentIndexCount}" class="form-control mb-2" value="${question}">
+                            <input type="text" name="ExperimentTextDocument_question_${TextDocumentIndexCount}" id="ExperimentTextDocument_question_${TextDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${question}">
                             <label for="ExperimentTextDocument_question_${TextDocumentIndexCount}">Question</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" name="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" id="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" class="form-control mb-2" value="${textdoc_name}">
+                            <input type="text" name="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" id="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${textdoc_name}">
                             <label for="ExperimentTextDocument_textdoc_name_${TextDocumentIndexCount}">Text Document Name</label>
                         </div>
                         <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${TextDocumentIndexCount}" value="delete"> Delete
@@ -365,11 +366,11 @@
             <div class="card-header component-title">NewsQA ${NewsQADocumentIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" class="form-control mb-2" value="${story_id}">
+                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" class="form-control mb-2 saveable-input" value="${story_id}">
                     <label for="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}">Story ID</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" class="form-control mb-2" value="${newsqa_name}">
+                    <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" class="form-control mb-2 saveable-input" value="${newsqa_name}">
                     <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}">NewsQA Name</label>
                 </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
@@ -394,22 +395,22 @@
             <div class="card-header component-title">${chunker_type} ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
-                    <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" id="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2">
+                    <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" id="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
                         <option value="SentChunker" ${chunker_type==='SentChunker' ? 'selected=""' : '' }>SentChunker</option>
                     </select>
                     <label for="ExperimentChunker_chunker_type_${ChunkerIndexCount}">Chunker Type</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" id="ExperimentChunker_chunk_length_${ChunkerIndexCount}" class="form-control mb-2" value="${chunk_length}">
+                    <input type="number" name="ExperimentChunker_chunk_length_${ChunkerIndexCount}" id="ExperimentChunker_chunk_length_${ChunkerIndexCount}" class="form-control mb-2 saveable-input" value="${chunk_length}">
                     <label for="ExperimentChunker_chunk_length_${ChunkerIndexCount}">Chunk Length</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="number" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" id="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" class="form-control mb-2" value="${sliding_window_size}">
+                    <input type="number" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" id="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" class="form-control mb-2 saveable-input" value="${sliding_window_size}">
                     <label for="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}">Sliding Window Size</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" id="ExperimentChunker_chunker_name_${ChunkerIndexCount}" class="form-control mb-2" value="${chunker_name}">
+                    <input type="text" name="ExperimentChunker_chunker_name_${ChunkerIndexCount}" id="ExperimentChunker_chunker_name_${ChunkerIndexCount}" class="form-control mb-2 saveable-input" value="${chunker_name}">
                     <label for="ExperimentChunker_chunker_name_${ChunkerIndexCount}">Chunker Name</label>
                 </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentChunker_${ChunkerIndexCount}" value="delete"> Delete
@@ -433,7 +434,7 @@
             <div class="card-header component-title">${ranker_type} ${RankerIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
-                    <select name="ExperimentRanker_ranker_type_${RankerIndexCount}" id="ExperimentRanker_ranker_type_${RankerIndexCount}" class="form-select mb-2">
+                    <select name="ExperimentRanker_ranker_type_${RankerIndexCount}" id="ExperimentRanker_ranker_type_${RankerIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
                         <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
                         <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
@@ -441,11 +442,11 @@
                     <label for="ExperimentRanker_ranker_type_${RankerIndexCount}">Ranker Type</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" id="ExperimentRanker_top_k_${RankerIndexCount}" class="form-control mb-2" value="${top_k}">
+                    <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" id="ExperimentRanker_top_k_${RankerIndexCount}" class="form-control mb-2 saveable-input" value="${top_k}">
                     <label for="ExperimentRanker_top_k_${RankerIndexCount}">Top K</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" id="ExperimentRanker_ranker_name_${RankerIndexCount}" class="form-control mb-2" value="${ranker_name}">
+                    <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" id="ExperimentRanker_ranker_name_${RankerIndexCount}" class="form-control mb-2 saveable-input" value="${ranker_name}">
                     <label for="ExperimentRanker_ranker_name_${RankerIndexCount}">Ranker Name</label>
                 </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
@@ -468,7 +469,7 @@
             <div class="card-header component-title">${model_type} ${QAIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
-                    <select name="ExperimentQA_model_type_${QAIndexCount}" id="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2">
+                    <select name="ExperimentQA_model_type_${QAIndexCount}" id="ExperimentQA_model_type_${QAIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
                         <option value="GptQA" ${model_type==='GptQA' ? 'selected=""' : '' }>GptQA</option>
                         <option value="LlamaQA" ${model_type==='LlamaQA' ? 'selected=""' : '' }>LlamaQA</option>
@@ -476,7 +477,7 @@
                     <label for="ExperimentQA_model_type_${QAIndexCount}">Model Type</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" id="ExperimentQA_model_name_${QAIndexCount}" class="form-control mb-2" value="${model_name}">
+                    <input type="text" name="ExperimentQA_model_name_${QAIndexCount}" id="ExperimentQA_model_name_${QAIndexCount}" class="form-control mb-2 saveable-input" value="${model_name}">
                     <label for="ExperimentQA_model_name_${QAIndexCount}">Model Name</label>
                 </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentQA_${QAIndexCount}" value="delete"> Delete
@@ -492,59 +493,115 @@
     function deleteComponent() {
         $(this).closest('.card-wrapper').remove();
     }
-    
+
     function updateAggrResults() {
         // get the results for the current pipeline from the answers dictionary
         const results = JSON.parse(document.getElementById('answers').textContent);
         let aggrResultsDiv = document.getElementById('results');
         // check which checkboxes are checked, create an array of 0s and 1s
-        let checked = Array.from(aggrResultsDiv.querySelectorAll('input[type="checkbox"]')).map(checkbox => checkbox.checked ? 1 : 0);
+        let checked = Array.from(aggrResultsDiv.querySelectorAll('input[type="checkbox"]')).map(checkbox => checkbox.checked ? (checkbox.interPersist ? -1 : 0) : 1);
         // find all results that match the currentPipeline in their elements that have a 1 in the checked array
         let matchingResults = Object.keys(results).filter(key => {
             let keyComponents = key.split('<sep>');
-            // e.g. if checked is [1, 0, 1, 0] 
+            // e.g. if checked is [1, 0, 1, 0]
             // and keyComponents is ['chunker_0', 'ranker_0', 'qa_0', 'newsqa_0']
             // then we want to return true if keyComponents[0] and keyComponents[2] are in the currentPipeline
             // and we do not care whether keyComponents[1] and keyComponents[3] are in the currentPipeline.
             return keyComponents.every((component, index) => {
-                return (checked[index] === 1 && currentPipeline.includes(component)) || checked[index] === 0;
+                return (checked[index] === 1 && currentPipeline.includes(component)) || checked[index] < 1;
             });
         });
-        // Calculate the aggregated mean results for all numerical values in the matchingResults
+        // if the last checkbox has value -1, we want macro aggregation for the documents
+        // group the matchingResults by the document name and calculate the average of the metrics for each document
         let aggrResults = {};
-        let count = 0;
-        matchingResults.forEach(key => {
-            let value = results[key];
-            value.forEach((val, index) => {
-                // if value has a ground truth
-                if (val.ground_truths.length === 1 && val.ground_truths[0] === '') {
+        if (checked[checked.length - 1] === -1) {
+            let documentResults = {};
+            matchingResults.forEach(key => {
+                let keyComponents = key.split('<sep>');
+                let documentName = keyComponents[3];
+                // if all the results have no ground truth, we do not want to include them in the aggregation
+                let pipeline = results[key];
+                let allNoGroundTruth = pipeline.every(val => val.ground_truths.length === 1 && val.ground_truths[0] === '');
+                if (allNoGroundTruth) {
                     return;
                 }
-                count++;
-                for (const [key, value] of Object.entries(val)) {
-                    if (typeof value === 'number') {
-                        if (aggrResults[key] === undefined) {
-                            aggrResults[key] = 0;
-                        }
-                        aggrResults[key] += value;
-                    }    
+                if (documentResults[documentName] === undefined) {
+                    documentResults[documentName] = [];
                 }
+                documentResults[documentName].push(key);
             });
-        });
-        // divide each value in aggrResults by count
-        for (const [key, value] of Object.entries(aggrResults)) {
-            aggrResults[key] = value / count;
+            // calculate the average of the metrics for each document
+            for (const [document, document_pipelines_list] of Object.entries(documentResults)) {
+                let aggrResultsForDocument = {};
+                let count = 0;
+                document_pipelines_list.forEach(pipeline => {
+                    let pipeline_results = results[pipeline];
+                    pipeline_results.forEach((eval, index) => {
+                        count++;
+                        for (const [key, value] of Object.entries(eval)) {
+                            if (typeof value === 'number') {
+                                if (aggrResultsForDocument[key] === undefined) {
+                                    aggrResultsForDocument[key] = 0;
+                                }
+                                aggrResultsForDocument[key] += value;
+                            }
+                        }
+                    });
+                });
+                // divide each value in aggrResultsForDocument by count
+                for (const [key, value] of Object.entries(aggrResultsForDocument)) {
+                    aggrResultsForDocument[key] = value / count;
+                }
+                aggrResults[document] = aggrResultsForDocument;
+            }
+        } else {
+            // if the last checkbox has value 1, we want micro aggregation for the documents
+            matchingResults.forEach(pipeline => {
+                let pipeline_results = results[pipeline];
+                pipeline_results.forEach((eval, index) => {
+                    // if value has a ground truth
+                    if (eval.ground_truths.length === 1 && eval.ground_truths[0] === '') {
+                        return;
+                    }
+                    let qResults = {};
+                    for (const [key, value] of Object.entries(eval)) {
+                        if (typeof value === 'number') {
+                            qResults[key] = value;
+                        }
+                    }
+                    aggrResults[pipeline+index] = qResults;
+                });
+            }); 
         }
-        
+                
+        // Calculate the aggregated mean results for all numerical values in the matchingResults
+        let aggrResultsFinal = {};
+        let count = 0;
+        for (const [key, value] of Object.entries(aggrResults)) {
+            count++;
+            for (const [key_, value_] of Object.entries(value)) {
+                if (typeof value_ === 'number') {
+                    if (aggrResultsFinal[key_] === undefined) {
+                        aggrResultsFinal[key_] = 0;
+                    }
+                    aggrResultsFinal[key_] += value_;
+                }
+            }
+        }
+        // divide each value in aggrResults by count
+        for (const [key, value] of Object.entries(aggrResultsFinal)) {
+            aggrResultsFinal[key] = value / count;
+        }
+
         // display the aggrResults in the aggrResultsDiv
         let aggrDisplay = document.getElementById('aggrDisplay');
         aggrDisplay.innerHTML = '';
-        if (Object.keys(aggrResults).length === 0) {
+        if (Object.keys(aggrResultsFinal).length === 0) {
             let p = document.createElement('p');
             p.innerHTML = `No results to display.`;
             aggrDisplay.appendChild(p);
         }
-        for (const [key, value] of Object.entries(aggrResults)) {
+        for (const [key, value] of Object.entries(aggrResultsFinal)) {
             let p = document.createElement('p');
             p.innerHTML = `<strong>${key}:</strong> ${value}`;
             aggrDisplay.appendChild(p);
@@ -552,7 +609,7 @@
     }
 
     const names = ['chunker_name', 'ranker_name', 'model_name', 'textdoc_name', 'newsqa_name', ];
-    
+
     function updateHighlights(newElement) {
         // update the highlights based on the newElement
         let newElementId = newElement[0].id;
@@ -567,7 +624,7 @@
                     return this.value === component;
                 }).closest('.card');
                 componentWrapper.addClass('highlighted-component');
-                
+
                 // remove the class highlighted from all the other components in the same column
                 componentWrapper.closest('.col').find('.card').not(componentWrapper).removeClass('highlighted-component');
             });
@@ -576,8 +633,26 @@
         updateAggrResults();
     }
     
-    
-    
+    function updateInputValues(comp, compType, selectedValue, index) {
+        comp.fields.forEach(field => {
+            let inputName = `${comp.prefix}_${field}_${index}`;
+            let input = $(`input[name="${inputName}"]`);
+            let newValue = defaultValues[compType][selectedValue][field];
+
+            if (field.includes('_name')) {
+                newValue += index;
+            }
+
+            if (!customValues[compType][index][selectedValue] || !customValues[compType][index][selectedValue][field]) {
+                input.val(newValue);
+            } else {
+                input.val(customValues[compType][index][selectedValue][field]);
+            }
+        });
+    }
+
+
+
     // read initial data about components and answers
     document.addEventListener("DOMContentLoaded", function() {
         const initialData = JSON.parse(document.getElementById('initial-data').textContent)['components'];
@@ -590,8 +665,6 @@
                         break;
     
                     case 'ExperimentNewsQaDocument':
-                        console.log('news')
-                        console.log(component.data);
                         addNewsQADocumentComponent(component.data);
                         break;
     
@@ -608,8 +681,8 @@
                         break;
                 }
         });
-        
-        
+
+
         const answers = JSON.parse(document.getElementById('answers').textContent);
         console.log(answers);
         // answers is a dictionary with the keys being the set of component instances (i.e. pipelines) and the values being the list of answers
@@ -670,21 +743,21 @@
 
     $(document).ready(function () {
         let componentHighlighter = $('.component-highlighter');
-            let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
-            let currentElement = componentHighlighterElements.filter(function() {
-                let rect = this.getBoundingClientRect();
-                return (
-                    rect.top <= componentHighlighter.height()
-                    && rect.bottom >= 0
-                );
-            });
-            // if the currentElement is not empty, then we have an element in view
-            if (currentElement.length) {
-                // get the components whose names are in the currentElementId
-                updateHighlights(currentElement);
-            }
-            
-        
+        let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
+        let currentElement = componentHighlighterElements.filter(function() {
+            let rect = this.getBoundingClientRect();
+            return (
+                rect.top <= componentHighlighter.height()
+                && rect.bottom >= 0
+            );
+        });
+        // if the currentElement is not empty, then we have an element in view
+        if (currentElement.length) {
+            // get the components whose names are in the currentElementId
+            updateHighlights(currentElement);
+        }
+
+
         // Store the original width of each .card.compact in a data attribute
         $('.card.compact').each(function() {
             var originalWidth = $(this).width();
@@ -708,7 +781,7 @@
                 $(this).css('height', '');
             }
         );
-        
+
         var answerCol = document.getElementById('answerCol');
         var textContent = answerCol.textContent || answerCol.innerText;
         textContent = textContent.trim();
@@ -736,17 +809,48 @@
                     clone.css('position', 'absolute');
                     return clone.get(0);
                 },
-                update: function(event, ui) {
-                    console.log("Order updated within the column.");
-                }
             }).disableSelection();
         });
-        
+
         // update the aggregate results when the checkboxes are clicked
-        $(document).on('change', '.agg-res-updater', function() {
+        $(document).on('change', '.agg-res-updater', function(e) {
+            // if the checkbox has class document-aggr-res-updater
+            if ($(e.target).hasClass('document-aggr-res-updater')) {
+                // if the checkbox clicked was previously unchecked, set it to intermediate state
+                if ($(e.target).prop('checked') === true && $(e.target).prop('interPersist') === false) {
+                    $(e.target).prop({
+                        indeterminate: true,
+                        interPersist: true,
+                        checked: true
+                    });
+                }
+                // if the checkbox clicked was previously in intermediate state, set it to checked
+                else if ($(e.target).prop('checked') === false && $(e.target).prop('interPersist') === true){
+                    $(e.target).prop({
+                        indeterminate: false,
+                        interPersist: false,
+                        checked: true
+                    });
+                }
+                // if the checkbox clicked was previously checked, set it to unchecked
+                else if ($(e.target).prop('checked') === false && $(e.target).prop('interPersist') === false) {
+                    $(e.target).prop({
+                        indeterminate: false,
+                        interPersist: false,
+                        checked: false
+                    });
+                } else {
+                    $(e.target).prop({
+                        indeterminate: true,
+                        interPersist: true,
+                        checked: true
+                    });
+                }
+            }
+                
             updateAggrResults();
         });
-        
+
         // update the component-highlighter-element that is currently in view based on the clicked .card
         $(document).on('click', '.card', function() {
             // iterate through the names list and look at the text input that is in the card
@@ -788,25 +892,30 @@
                 }
             }
         });
-         
-        
+
+
         // update the highlights based on the component-highlighter-element that is currently in view
         $(document).on('wheel', '.component-highlighter', function(e) {    
-            console.log('scrolling');
             // find the component-highlighter-element that is currently in view
             let componentHighlighter = $(this);
             let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
-            console.log(componentHighlighterElements);
+            let scrollDistanceIfDown = e.originalEvent.deltaY > 0 ? e.originalEvent.deltaY : 0;
             let currentElement = componentHighlighterElements.filter(function() {
                 let rect = this.getBoundingClientRect();
                 return (
                     rect.top <= componentHighlighter.height()
                     && rect.bottom >= 0
+                    && rect.bottom >= componentHighlighter.offset().top + scrollDistanceIfDown
                 );
             });
-            
+
             // if the currentElement is not empty, then we have an element in view
             if (currentElement.length) {
+                let rect = currentElement[0].getBoundingClientRect();
+                console.log('bottom', rect.bottom);
+                console.log('top', rect.top);
+                console.log('height', componentHighlighter.height());
+                console.log('offsetTop', componentHighlighter.offset().top);
                 updateHighlights(currentElement);
             }
         });
@@ -898,7 +1007,7 @@
             });
         });
 
-        $(document).on('input', 'input', function() {
+        $(document).on('input', '.saveable-input', function() {
             let input = $(this);
             let inputName = input.attr('name');
             let index = inputName.match(/\d+$/)[0];
@@ -925,28 +1034,11 @@
                     }
 
                     customValues[compDetail.type][index][selector][fieldType] = input.val();
-                    console.log(customValues);
                 }
             });
         });
 
-        function updateInputValues(comp, compType, selectedValue, index) {
-            comp.fields.forEach(field => {
-                let inputName = `${comp.prefix}_${field}_${index}`;
-                let input = $(`input[name="${inputName}"]`);
-                let newValue = defaultValues[compType][selectedValue][field];
-
-                if (field.includes('_name')) {
-                    newValue += index;
-                }
-
-                if (!customValues[compType][index][selectedValue] || !customValues[compType][index][selectedValue][field]) {
-                    input.val(newValue);
-                } else {
-                    input.val(customValues[compType][index][selectedValue][field]);
-                }
-            });
-        }
+        
     });
 </script>
 
