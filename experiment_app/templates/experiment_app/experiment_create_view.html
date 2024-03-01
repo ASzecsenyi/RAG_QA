@@ -130,10 +130,12 @@
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    {{ initial_data|json_script:"initial-data" }}
-    {{ answers|json_script:"answers" }}
-    <div class="row">
+
+{{ initial_data|json_script:"initial-data" }}
+{{ answers|json_script:"answers" }}
+
+<div class="container mt-5" style="margin-right: 0; margin-left: 5vw;">
+    <div class="row" style="width: 95vw">
         <div class="col">
             <h1>RAG QA</h1>
             <form method="post" enctype="multipart/form-data">
@@ -156,7 +158,6 @@
                 <div id="componentsContainer" class="row full-span-row" >
                     {% for class, name in form.cols.items %}
                         <div id="{{ class }}" class="col">
-
                         </div>
                         {% if not forloop.last %}
                             <div class="separator">x</div>
@@ -175,19 +176,92 @@
                     <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
                     <button type="button" onclick="addRankerComponent()" class="btn btn-info">Add Ranker</button>
                     <button type="button" onclick="addQAComponent()" class="btn btn-info">Add QA</button>
-
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
         </div>
-
-        <div id="answer" class="col container mt-5 component-highlighter" style="overflow-wrap: break-word; overflow-y: scroll; height: 80vh;">
-           
+        <div id="answerCol" class="col">
+            <div id="carouselExample" class="carousel slide" data-bs-theme="dark">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="row">
+                            <div class="col">
+                                <div id="answer" class="container mt-5 component-highlighter" style="overflow-wrap: break-word; overflow-y: scroll; height: 80vh;" data-bs-theme="light">
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next" style="width: 7%;">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-1">
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev" style="width: 7%">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                            </div>
+                            <div class="col">
+                                <div id="results" class="container mt-5" style="overflow-wrap: break-word; height: 80vh;" data-bs-theme="light">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input agg-res-updater" type="checkbox" value="" id="ChunkerCheck">
+                                                <label class="form-check-label" for="ChunkerCheck">
+                                                  ChunkerCheck
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input agg-res-updater" type="checkbox" value="" id="RankerCheck">
+                                                <label class="form-check-label" for="RankerCheck">
+                                                  RankerCheck
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input agg-res-updater" type="checkbox" value="" id="QACheck">
+                                                <label class="form-check-label" for="QACheck">
+                                                  QACheck
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input agg-res-updater" type="checkbox" value="" id="DocumentCheck">
+                                                <label class="form-check-label" for="DocumentCheck">
+                                                  DocumentCheck
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h5>Aggregated results</h5>
+                                        </div>
+                                        <div class="card-body" id="aggrDisplay">
+                                            <p>Aggregated results will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
-
 </div>
+        
+
 
 <script>
     <!-- initialise with the value of the number input num_text_documents -->
@@ -242,6 +316,7 @@
         Ranker: {},
         QA: {}
     };
+    let currentPipeline = [];
 
     function addTextDocumentComponent(componentData = null) {
         let fileName = componentData ? componentData.fileName : '';
@@ -257,7 +332,7 @@
                         <div class="form-floating mb-3">
                             <input type="file" name="ExperimentTextDocument_file_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_${TextDocumentIndexCount}" class="form-control mb-2" accept=".txt" value="${fileName}">
                             <label for="ExperimentTextDocument_file_${TextDocumentIndexCount}">File</label>
-                        </div>       
+                        </div>
                         <div class="form-floating mb-3">
                             <input type="text" name="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" id="ExperimentTextDocument_file_path_${TextDocumentIndexCount}" class="form-control mb-2" value="${file_path}">
                             <label for="ExperimentTextDocument_file_path_${TextDocumentIndexCount}">File Path</label>
@@ -364,14 +439,14 @@
                         <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
                     </select>
                     <label for="ExperimentRanker_ranker_type_${RankerIndexCount}">Ranker Type</label>
-                </div>  
+                </div>
                 <div class="form-floating mb-3">
                     <input type="number" name="ExperimentRanker_top_k_${RankerIndexCount}" id="ExperimentRanker_top_k_${RankerIndexCount}" class="form-control mb-2" value="${top_k}">
                     <label for="ExperimentRanker_top_k_${RankerIndexCount}">Top K</label>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="text" name="ExperimentRanker_ranker_name_${RankerIndexCount}" id="ExperimentRanker_ranker_name_${RankerIndexCount}" class="form-control mb-2" value="${ranker_name}">
-                    <label for="ExperimentRanker_ranker_name_${RankerIndexCount}">Ranker Name</label>   
+                    <label for="ExperimentRanker_ranker_name_${RankerIndexCount}">Ranker Name</label>
                 </div>
                 <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentRanker_${RankerIndexCount}" value="delete"> Delete
             </div>
@@ -417,7 +492,93 @@
     function deleteComponent() {
         $(this).closest('.card-wrapper').remove();
     }
+    
+    function updateAggrResults() {
+        // get the results for the current pipeline from the answers dictionary
+        const results = JSON.parse(document.getElementById('answers').textContent);
+        let aggrResultsDiv = document.getElementById('results');
+        // check which checkboxes are checked, create an array of 0s and 1s
+        let checked = Array.from(aggrResultsDiv.querySelectorAll('input[type="checkbox"]')).map(checkbox => checkbox.checked ? 1 : 0);
+        // find all results that match the currentPipeline in their elements that have a 1 in the checked array
+        let matchingResults = Object.keys(results).filter(key => {
+            let keyComponents = key.split('<sep>');
+            // e.g. if checked is [1, 0, 1, 0] 
+            // and keyComponents is ['chunker_0', 'ranker_0', 'qa_0', 'newsqa_0']
+            // then we want to return true if keyComponents[0] and keyComponents[2] are in the currentPipeline
+            // and we do not care whether keyComponents[1] and keyComponents[3] are in the currentPipeline.
+            return keyComponents.every((component, index) => {
+                return (checked[index] === 1 && currentPipeline.includes(component)) || checked[index] === 0;
+            });
+        });
+        // Calculate the aggregated mean results for all numerical values in the matchingResults
+        let aggrResults = {};
+        let count = 0;
+        matchingResults.forEach(key => {
+            let value = results[key];
+            value.forEach((val, index) => {
+                // if value has a ground truth
+                if (val.ground_truths.length === 1 && val.ground_truths[0] === '') {
+                    return;
+                }
+                count++;
+                for (const [key, value] of Object.entries(val)) {
+                    if (typeof value === 'number') {
+                        if (aggrResults[key] === undefined) {
+                            aggrResults[key] = 0;
+                        }
+                        aggrResults[key] += value;
+                    }    
+                }
+            });
+        });
+        // divide each value in aggrResults by count
+        for (const [key, value] of Object.entries(aggrResults)) {
+            aggrResults[key] = value / count;
+        }
+        
+        // display the aggrResults in the aggrResultsDiv
+        let aggrDisplay = document.getElementById('aggrDisplay');
+        aggrDisplay.innerHTML = '';
+        if (Object.keys(aggrResults).length === 0) {
+            let p = document.createElement('p');
+            p.innerHTML = `No results to display.`;
+            aggrDisplay.appendChild(p);
+        }
+        for (const [key, value] of Object.entries(aggrResults)) {
+            let p = document.createElement('p');
+            p.innerHTML = `<strong>${key}:</strong> ${value}`;
+            aggrDisplay.appendChild(p);
+        }
+    }
 
+    const names = ['chunker_name', 'ranker_name', 'model_name', 'textdoc_name', 'newsqa_name', ];
+    
+    function updateHighlights(newElement) {
+        // update the highlights based on the newElement
+        let newElementId = newElement[0].id;
+        let newComponents = newElementId.split('<sep>');
+        // iterate through the components and highlight them - find the component whose name is in the components list and add the class highlighted
+        newComponents.forEach((component) => {
+            // find the component whose name is in the components list
+            // iterate through the names list and look at all the text inputs whose name contains the component name
+            // if the value of the text input is the same as the component name, then add the class highlighted
+            names.forEach((name) => {
+                let componentWrapper = $(`input[name*="${name}"]`).filter(function() {
+                    return this.value === component;
+                }).closest('.card');
+                componentWrapper.addClass('highlighted-component');
+                
+                // remove the class highlighted from all the other components in the same column
+                componentWrapper.closest('.col').find('.card').not(componentWrapper).removeClass('highlighted-component');
+            });
+        });
+        currentPipeline = newComponents;
+        updateAggrResults();
+    }
+    
+    
+    
+    // read initial data about components and answers
     document.addEventListener("DOMContentLoaded", function() {
         const initialData = JSON.parse(document.getElementById('initial-data').textContent)['components'];
         console.log(initialData);
@@ -447,6 +608,8 @@
                         break;
                 }
         });
+        
+        
         const answers = JSON.parse(document.getElementById('answers').textContent);
         console.log(answers);
         // answers is a dictionary with the keys being the set of component instances (i.e. pipelines) and the values being the list of answers
@@ -463,7 +626,7 @@
                 // val is a dict, we want the keys question, answer, ground_truths, contexts and fmeasure
                 
                 let html = `
-                    <div class="card mb-3">
+                    <div class="card mb-3" data-bs-toggle="collapse" href="#collapseExample-${key}-${index}" role="button">
                         <div class="card-header">
                             <h5>Question ${index + 1}</h5>
                         </div>
@@ -471,10 +634,12 @@
                             <p><strong>Question:</strong> ${val.question}</p>
                             <p><strong>Answer:</strong> ${val.answer.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)}</p>
                             <p><strong>Ground Truths:</strong> <strong>${val.ground_truths}</strong></p>
-                            <p><strong>Contexts:</strong> ${val.contexts.map(context => context.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)).join('<br>')}</p>
-                            <p><strong>Precision:</strong> ${val.precision}</p>
-                            <p><strong>Recall:</strong> ${val.recall}</p>
-                            <p><strong>F-Measure:</strong> ${val.fmeasure}</p>
+                            <div class="collapse" id="collapseExample-${key}-${index}">
+                                <p><strong>Contexts:</strong> ${val.contexts.map(context => context.replace(val.ground_truths, `<strong>${val.ground_truths}</strong>`)).join('<br>')}</p>
+                                <p><strong>Precision:</strong> ${val.precision}</p>
+                                <p><strong>Recall:</strong> ${val.recall}</p>
+                                <p><strong>F-Measure:</strong> ${val.fmeasure}</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -482,14 +647,16 @@
                 // then we don't want to display it or the metrics
                 if (val.ground_truths.length === 1 && val.ground_truths[0] === '') {
                     html = `
-                        <div class="card mb-3">
+                        <div class="card mb-3"  data-bs-toggle="collapse" href="#collapseExample-${key}-${index}" role="button">
                             <div class="card-header">
                                 <h5>Question ${index + 1}</h5>
                             </div>
                             <div class="card-body">
                                 <p><strong>Question:</strong> ${val.question}</p>
                                 <p><strong>Answer:</strong> ${val.answer}</p>
-                                <p><strong>Contexts:</strong> ${val.contexts.join('<br>')}</p>
+                                <div class="collapse" id="collapseExample-${key}-${index}">
+                                    <p><strong>Contexts:</strong> ${val.contexts.join('<br>')}</p>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -502,6 +669,22 @@
     });
 
     $(document).ready(function () {
+        let componentHighlighter = $('.component-highlighter');
+            let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
+            let currentElement = componentHighlighterElements.filter(function() {
+                let rect = this.getBoundingClientRect();
+                return (
+                    rect.top <= componentHighlighter.height()
+                    && rect.bottom >= 0
+                );
+            });
+            // if the currentElement is not empty, then we have an element in view
+            if (currentElement.length) {
+                // get the components whose names are in the currentElementId
+                updateHighlights(currentElement);
+            }
+            
+        
         // Store the original width of each .card.compact in a data attribute
         $('.card.compact').each(function() {
             var originalWidth = $(this).width();
@@ -525,13 +708,14 @@
                 $(this).css('height', '');
             }
         );
-        var answerDiv = document.getElementById('answer');
-        var textContent = answerDiv.textContent || answerDiv.innerText;
+        
+        var answerCol = document.getElementById('answerCol');
+        var textContent = answerCol.textContent || answerCol.innerText;
         textContent = textContent.trim();
 
         if (!textContent) {
-            /* change answerDiv class to col-1 */
-            answerDiv.className = 'col-3';
+            /* change answerDiv class to col-3 */
+            answerCol.className = 'col-3';
         }
         // For existing elements, update their classes
         $('input[type="text"], input[type="file"], input[type="number"], select').addClass('form-control mb-2');
@@ -558,8 +742,55 @@
             }).disableSelection();
         });
         
-        const names = ['chunker_name', 'ranker_name', 'model_name', 'textdoc_name', 'newsqa_name', ];
+        // update the aggregate results when the checkboxes are clicked
+        $(document).on('change', '.agg-res-updater', function() {
+            updateAggrResults();
+        });
+        
+        // update the component-highlighter-element that is currently in view based on the clicked .card
+        $(document).on('click', '.card', function() {
+            // iterate through the names list and look at the text input that is in the card
+            // set the value of currentName to the value of the text input
+            let currentName = '';
+            names.forEach((name) => {
+                let input = $(this).find(`input[name*="${name}"]`);
+                if (input.length) {
+                    currentName = input.val();
+                }
+            });
+            // if the clicked cards name is not in the components list
+            // scroll to the component-highlighter-element whose id contains the name of the clicked card but is otherwise the same as the currentElementId
+            if (!currentPipeline.includes(currentName)) {
+                let extendedComponents = currentPipeline.concat(currentName);
+                let newElement = componentHighlighterElements.filter(function() {
+                    // return the one that has 4 out of the five elements in components+currentName, incl. currentName
+                    let id = this.id;
+                    let idComponents = id.split('<sep>');
+                    let count = 0;
+                    for (let i = 0; i < extendedComponents.length; i++) {
+                        if (idComponents.includes(extendedComponents[i])) {
+                            count++;
+                        }
+                    }
+                    return count === 4 && idComponents.includes(currentName);
+                });
+                if (newElement.length) {
+                    newElement[0].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+                    updateHighlights(newElement);
+                }
+            } else {
+                let newElement = componentHighlighterElements.filter(function() {
+                    return this.id.split('<sep>') === currentPipeline;
+                });
+                if (newElement.length) {
+                    newElement[0].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+                    updateHighlights(newElement);
+                }
+            }
+        });
          
+        
+        // update the highlights based on the component-highlighter-element that is currently in view
         $(document).on('wheel', '.component-highlighter', function(e) {    
             console.log('scrolling');
             // find the component-highlighter-element that is currently in view
@@ -569,37 +800,18 @@
             let currentElement = componentHighlighterElements.filter(function() {
                 let rect = this.getBoundingClientRect();
                 return (
-                    // true if any part of the element is in the viewport - the element is a lot taller than the viewport
-                    rect.top <= window.innerHeight && rect.bottom >= 0
-                    
-                    
+                    rect.top <= componentHighlighter.height()
+                    && rect.bottom >= 0
                 );
             });
-            console.log(currentElement.length);
+            
             // if the currentElement is not empty, then we have an element in view
             if (currentElement.length) {
-                // get the id of the currentElement
-                let currentElementId = currentElement[0].id;
-                // get the components whose names are in the currentElementId
-                let components = currentElementId.split('<sep>');
-                console.log(components);
-                // iterate through the components and highlight them - find the component whose name is in the components list and add the class highlighted-component
-                components.forEach((component) => {
-                    // find the component whose name is in the components list
-                    // iterate through the names list and look at all the text inputs whose name contains the component name
-                    // if the value of the text input is the same as the component name, then add the class highlighted-component
-                    names.forEach((name) => {
-                        let componentWrapper = $(`input[name*="${name}"]`).filter(function() {
-                            return this.value === component;
-                        }).closest('.card');
-                        componentWrapper.addClass('highlighted-component');
-                        // remove the class highlighted-component from all the other components in the same column
-                        componentWrapper.closest('.col').find('.card').not(componentWrapper).removeClass('highlighted-component');
-                    });
-                });
+                updateHighlights(currentElement);
             }
         });
 
+        // Below is the code to handle the scrolling of the components
         $(document).on('wheel', '.card', function(e) {
               // Find the select element within the card
               let select = $(this).find('.form-select');
@@ -639,10 +851,6 @@
                 let selectedValue = select.val();
                 cardHeader.text(`${selectedValue} ${cardHeader.text().split(' ')[1]}`);
 
-
-              // Prevent page from scrolling if there's a select element to scroll through
-              // Comment this out if you want the whole page to scroll normally
-              //e.preventDefault();
           });
 
         $(document).on('change', '.form-select', function() {
