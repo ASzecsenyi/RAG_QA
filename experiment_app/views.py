@@ -3,26 +3,42 @@ from django.shortcuts import render
 from experiments.Experiment import Experiment
 from data.TextDocument import TextDocument
 from data.NewsQaDocument import NewsQaDocument
+from data.QAsperDocument import QAsperDocument
 from retrieval.Chunker.CharChunker import CharChunker
+from retrieval.Chunker.WordChunker import WordChunker
 from retrieval.Chunker.SentChunker import SentChunker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
+from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
 from retrieval.Ranker.SentEmbeddingRanker import SentEmbeddingRanker
 from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
+from retrieval.Ranker.HybridRanker import HybridRanker
+from retrieval.Ranker.PromptRanker import PromptRanker
 from qa.MistralQA import MistralQA
 from qa.LlamaQA import LlamaQA
 from qa.GptQA import GptQA
+from qa.GemmaQA import GemmaQA
 
 from .forms import ExperimentForm
 
 evals = {
     'CharChunker': CharChunker,
+    'WordChunker': WordChunker,
     'SentChunker': SentChunker,
     'TfidfRanker': TfidfRanker,
     'SentEmbeddingRanker': SentEmbeddingRanker,
+    'CrossEncodingRanker': CrossEncodingRanker,
     'GuessSimilarityRanker': GuessSimilarityRanker,
+    'HybridRanker': HybridRanker,
+    'PromptRanker': PromptRanker,
     'MistralQA': MistralQA,
     'GptQA': GptQA,
+    'GemmaQA': GemmaQA,
     'LlamaQA': LlamaQA
+}
+
+doc_evals = {
+    'NewsQaDocument': NewsQaDocument,
+    'QAsperDocument': QAsperDocument,
 }
 
 # from .models import Experiment
@@ -47,7 +63,7 @@ def experiment_create_view(request):
                 datasets.append(file_data)
 
             for news_qa_document in experiment.experimentnewsqadocument_set.all():
-                file_data = NewsQaDocument(
+                file_data = doc_evals[news_qa_document.newsqa_type](
                     story_id=news_qa_document.story_id,
                     name=news_qa_document.newsqa_name
                 )

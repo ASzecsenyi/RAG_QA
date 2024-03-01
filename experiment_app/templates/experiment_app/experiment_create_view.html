@@ -170,7 +170,7 @@
                     <!-- Buttons to add new component of each type -->
                     <button type="button" onclick="addTextDocumentComponent()" class="btn btn-info">Add Text Document
                     </button>
-                    <button type="button" onclick="addNewsQADocumentComponent()" class="btn btn-info">Add NewsQA
+                    <button type="button" onclick="addNewsQaDocumentComponent()" class="btn btn-info">Add NewsQA
                         Document
                     </button>
                     <button type="button" onclick="addChunkerComponent()" class="btn btn-info">Add Chunker</button>
@@ -265,13 +265,14 @@
 
 
 <script>
-    <!-- initialise with the value of the number input num_text_documents -->
+    // <!-- initialise with the value of the number input num_text_documents -->
     let TextDocumentIndexCount = 0;
-    let NewsQADocumentIndexCount = 0;
+    let NewsQaDocumentIndexCount = 0;
     let ChunkerIndexCount = 0;
     let RankerIndexCount = 0;
     let QAIndexCount = 0;
 
+    // <!-- TODO: get these from form -->
     let defaultValues = {
         Chunker: {
             CharChunker: {
@@ -279,9 +280,14 @@
                 sliding_window_size: 0.1,
                 chunker_name: "char_chunker_"
             },
+            WordChunker: {
+                chunk_length: 50,
+                sliding_window_size: 0.1,
+                chunker_name: "word_chunker_"
+            },
             SentChunker: {
-                chunk_length: 5,
-                sliding_window_size: 0.3,
+                chunk_length: 2,
+                sliding_window_size: 0.5,
                 chunker_name: "sent_chunker_"
             }
         },
@@ -294,9 +300,21 @@
                 top_k: 5,
                 ranker_name: "sent_embedding_ranker_"
             },
+            CrossEncoderRanker: {
+                top_k: 5,
+                ranker_name: "cross_encoder_ranker_"
+            },
             GuessSimilarityRanker: {
                 top_k: 3,
                 ranker_name: "guess_similarity_ranker_"
+            },
+            HybridRanker: {
+                top_k: 4,
+                ranker_name: "hybrid_ranker_"
+            },
+            PromptRanker: {
+                top_k: 3,
+                ranker_name: "prompt_ranker_"
             }
         },
         QA: {
@@ -308,6 +326,17 @@
             },
             LlamaQA: {
                 model_name: "llama_qa_"
+            },
+            GemmaQA: {
+                model_name: "gemma_qa_"
+            }    
+        },
+        NewsQaDocument: {
+            NewsQaDocument: {
+                story_id: './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story'
+            },
+            QAsperDocument: {
+                story_id: '1911.10742'
             }
         }
     };
@@ -356,31 +385,39 @@
         TextDocumentIndexCount++;
     }
 
-    function addNewsQADocumentComponent(componentData = null) {
+    function addNewsQaDocumentComponent(componentData = null) {
+        let newsqa_type = componentData ? componentData.newsqa_type : 'NewsQaDocument';
         let story_id = componentData ? componentData.story_id : './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story';
-        let newsqa_name = componentData ? componentData.newsqa_name : `newsqa_${NewsQADocumentIndexCount}`;
+        let newsqa_name = componentData ? componentData.newsqa_name : `newsqa_${NewsQaDocumentIndexCount}`;
 
         const html = `
     <div class="card-wrapper ExperimentTextDocument">
         <div class="card mb-3 compact">
-            <div class="card-header component-title">NewsQA ${NewsQADocumentIndexCount + 1}</div>
+            <div class="card-header component-title">NewsQA ${NewsQaDocumentIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}" class="form-control mb-2 saveable-input" value="${story_id}">
-                    <label for="ExperimentNewsQaDocument_story_id_${NewsQADocumentIndexCount}">Story ID</label>
+                    <select name="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}" class="form-select mb-2 saveable-input">
+                        <option value="NewsQaDocument" ${newsqa_type==='NewsQaDocument' ? 'selected=""' : '' }>NewsQaDocument</option>
+                        <option value="QAsperDocument" ${newsqa_type==='QAsperDocument' ? 'selected=""' : '' }>QAsperDocument</option>
+                    </select>
+                    <label for="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}">Document Type</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}" class="form-control mb-2 saveable-input" value="${newsqa_name}">
-                    <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQADocumentIndexCount}">NewsQA Name</label>
+                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${story_id}">
+                    <label for="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}">Story ID</label>
                 </div>
-                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQADocumentIndexCount}" value="delete"> Delete
+                <div class="form-floating mb-3">
+                    <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${newsqa_name}">
+                    <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}">NewsQA Name</label>
+                </div>
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQaDocumentIndexCount}" value="delete"> Delete
             </div>
         </div>
     </div>
   `;
         $('#ExperimentTextDocument').append(html);
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
-        NewsQADocumentIndexCount++;
+        NewsQaDocumentIndexCount++;
     }
 
     function addChunkerComponent(componentData = null) {
@@ -389,6 +426,7 @@
         let sliding_window_size = componentData ? componentData.sliding_window_size : 0.1;
         let chunker_name = componentData ? componentData.chunker_name : `chunker_${ChunkerIndexCount}`;
 
+        // TODO get select options from form
         const html = `
     <div class="card-wrapper ExperimentChunker">
         <div class="card mb-3 compact">
@@ -397,6 +435,7 @@
                 <div class="form-floating mb-3">
                     <select name="ExperimentChunker_chunker_type_${ChunkerIndexCount}" id="ExperimentChunker_chunker_type_${ChunkerIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="CharChunker" ${chunker_type==='CharChunker' ? 'selected=""' : '' }>CharChunker</option>
+                        <option value="WordChunker" ${chunker_type==='WordChunker' ? 'selected=""' : '' }>WordChunker</option>
                         <option value="SentChunker" ${chunker_type==='SentChunker' ? 'selected=""' : '' }>SentChunker</option>
                     </select>
                     <label for="ExperimentChunker_chunker_type_${ChunkerIndexCount}">Chunker Type</label>
@@ -428,6 +467,7 @@
         let top_k = componentData ? componentData.top_k : 4;
         let ranker_name = componentData ? componentData.ranker_name : `ranker_${RankerIndexCount}`;
 
+        // TODO get select options from form    
         const html = `
     <div class="card-wrapper ExperimentRanker">
         <div class="card mb-3 compact">
@@ -437,7 +477,10 @@
                     <select name="ExperimentRanker_ranker_type_${RankerIndexCount}" id="ExperimentRanker_ranker_type_${RankerIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
                         <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
+                        <option value="CrossEncoderRanker" ${ranker_type==='CrossEncoderRanker' ? 'selected=""' : '' }>CrossEncoderRanker</option>
                         <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
+                        <option value="HybridRanker" ${ranker_type==='HybridRanker' ? 'selected=""' : '' }>HybridRanker</option>
+                        <option value="PromptRanker" ${ranker_type==='PromptRanker' ? 'selected=""' : '' }>PromptRanker</option>
                     </select>
                     <label for="ExperimentRanker_ranker_type_${RankerIndexCount}">Ranker Type</label>
                 </div>
@@ -463,6 +506,7 @@
         let model_type = componentData ? componentData.model_type : 'MistralQA';
         let model_name = componentData ? componentData.model_name : `qa_${QAIndexCount}`;
 
+        // TODO get select options from form 
         const html = `
     <div class="card-wrapper ExperimentQA">
         <div class="card mb-3 compact">
@@ -473,6 +517,7 @@
                         <option value="MistralQA" ${model_type==='MistralQA' ? 'selected=""' : '' }>MistralQA</option>
                         <option value="GptQA" ${model_type==='GptQA' ? 'selected=""' : '' }>GptQA</option>
                         <option value="LlamaQA" ${model_type==='LlamaQA' ? 'selected=""' : '' }>LlamaQA</option>
+                        <option value="GemmaQA" ${model_type==='GemmaQA' ? 'selected=""' : '' }>GemmaQA</option>
                     </select>
                     <label for="ExperimentQA_model_type_${QAIndexCount}">Model Type</label>
                 </div>
@@ -571,9 +616,9 @@
                     }
                     aggrResults[pipeline+index] = qResults;
                 });
-            }); 
+            });
         }
-                
+
         // Calculate the aggregated mean results for all numerical values in the matchingResults
         let aggrResultsFinal = {};
         let count = 0;
@@ -632,7 +677,7 @@
         currentPipeline = newComponents;
         updateAggrResults();
     }
-    
+
     function updateInputValues(comp, compType, selectedValue, index) {
         comp.fields.forEach(field => {
             let inputName = `${comp.prefix}_${field}_${index}`;
@@ -665,7 +710,7 @@
                         break;
     
                     case 'ExperimentNewsQaDocument':
-                        addNewsQADocumentComponent(component.data);
+                        addNewsQaDocumentComponent(component.data);
                         break;
     
                     case 'ExperimentChunker':
@@ -847,7 +892,7 @@
                     });
                 }
             }
-                
+
             updateAggrResults();
         });
 
@@ -1038,7 +1083,7 @@
             });
         });
 
-        
+
     });
 </script>
 

@@ -17,6 +17,7 @@ class ExperimentForm(forms.ModelForm):
         },
         ExperimentNewsQaDocument: {
             'story_id': forms.CharField,
+            'newsqa_type': forms.ChoiceField,
             'newsqa_name': forms.CharField,
         },
         ExperimentChunker: {
@@ -37,9 +38,10 @@ class ExperimentForm(forms.ModelForm):
     }
 
     choice_fields = {
-        'chunker_type': ['CharChunker', 'SentChunker'],
-        'ranker_type': ['TfidfRanker', 'SentEmbeddingRanker', 'GuessSimilarityRanker'],
-        'model_type': ['MistralQA', 'GptQA', 'LlamaQA'],
+        'chunker_type': ['CharChunker', 'WordChunker', 'SentChunker'],
+        'ranker_type': ['TfidfRanker', 'SentEmbeddingRanker', 'CrossEncodingRanker', 'GuessSimilarityRanker', 'HybridRanker', 'PromptRanker'],
+        'model_type': ['MistralQA', 'GptQA', 'LlamaQA', 'GemmaQA'],
+        'newsqa_type': ['NewsQaDocument', 'QAsperDocument'],
     }
 
     class Meta:

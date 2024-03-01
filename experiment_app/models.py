@@ -23,6 +23,7 @@ class ExperimentTextDocument(models.Model):
 
 
 class ExperimentNewsQaDocument(models.Model):
+    newsqa_type = models.CharField(max_length=100, blank=True, null=True)
     story_id = models.CharField(max_length=100, blank=True, null=True)
     newsqa_name = models.CharField(max_length=100, blank=True, null=True)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
