@@ -16,7 +16,8 @@ class ExperimentForm(forms.ModelForm):
             'textdoc_name': forms.CharField,
         },
         ExperimentNewsQaDocument: {
-            'story_id': forms.CharField,
+            # 'story_id': forms.CharField,
+            'num_of_stories': forms.IntegerField,
             'newsqa_type': forms.ChoiceField,
             'newsqa_name': forms.CharField,
         },

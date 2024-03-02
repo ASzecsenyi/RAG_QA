@@ -22,7 +22,7 @@ class ExperimentTextDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(ExperimentNewsQaDocument)
 class ExperimentNewsQaDocumentAdmin(admin.ModelAdmin):
-    list_display = ['id', 'experiment', 'story_id']
+    list_display = ['id', 'experiment', 'num_of_stories', 'newsqa_type', 'newsqa_name']
     search_fields = ['experiment__name']
     list_filter = ['experiment']
 

@@ -333,12 +333,12 @@
         },
         NewsQaDocument: {
             NewsQaDocument: {
-                story_id: './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story',
-                newsqa_name: "newsqa_"
+                num_of_stories: 150,
+                newsqa_name: "newsqa"
             },
             QAsperDocument: {
-                story_id: '1911.10742',
-                newsqa_name: "qasper_"
+                num_of_stories: 150,
+                newsqa_name: "qasper"
             }
         }
     };
@@ -389,8 +389,8 @@
 
     function addNewsQaDocumentComponent(componentData = null) {
         let newsqa_type = componentData ? componentData.newsqa_type : 'NewsQaDocument';
-        let story_id = componentData ? componentData.story_id : './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story';
-        let newsqa_name = componentData ? componentData.newsqa_name : `newsqa_${NewsQaDocumentIndexCount}`;
+        let num_of_stories = componentData ? componentData.num_of_stories : 150;
+        let newsqa_name = componentData ? componentData.newsqa_name : `newsqa`;
 
         const html = `
     <div class="card-wrapper ExperimentTextDocument">
@@ -404,10 +404,9 @@
                     </select>
                     <label for="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}">Document Type</label>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" name="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${story_id}">
-                    <label for="ExperimentNewsQaDocument_story_id_${NewsQaDocumentIndexCount}">Story ID</label>
-                </div>
+                <label for="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}">Num of Stories</label>
+                <input type="range" name="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" class="form-range" min="0" max="200" value="${num_of_stories}"  oninput="this.nextElementSibling.value = this.value">
+                <output>${num_of_stories}</output>
                 <div class="form-floating mb-3">
                     <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${newsqa_name}">
                     <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}">NewsQA Name</label>
@@ -668,7 +667,8 @@
             // if the value of the text input is the same as the component name, then add the class highlighted
             names.forEach((name) => {
                 let componentWrapper = $(`input[name*="${name}"]`).filter(function() {
-                    return this.value === component;
+                    // TODO handle newssqa and qasper
+                    return this.value === component || (component.startsWith(this.value) && this.value in ['newsqa', 'qasper']);
                 }).closest('.card');
                 componentWrapper.addClass('highlighted-component');
 
@@ -1005,7 +1005,7 @@
                 },
                 NewsQaDocument: {
                     match: select.attr('name').match(/NewsQaDocument_(.+)_\d+/),
-                    fields: ['story_id', 'newsqa_name'],
+                    fields: ['num_of_stories', 'newsqa_name'],
                     prefix: 'ExperimentNewsQaDocument', 
                 },
             };
