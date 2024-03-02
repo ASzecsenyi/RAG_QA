@@ -157,8 +157,6 @@ class Experiment:
                     continue
                 chunks = self.r(chunker.chunk, f"Chunking with {chunker.name}", times, document=dataset.document)
 
-                print(chunks)
-
                 for ranker in self.ranker:
                     if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for qa in self.qa]):
                         print(f"Results for {dataset.name}, {chunker.name}, {ranker.name} already found, skipping")
@@ -249,6 +247,7 @@ class Experiment:
 
         # if more than 5 files with the same name, delete the oldest
         files = os.listdir(f"../data/experiments")
+        abs_paths = [os.path.abspath(f"../data/experiments/{file}") for file in files]
         files.sort(key=lambda x: os.path.getmtime(f"../data/experiments/{x}"))
         files = [file for file in files if file.startswith(self.name)]
         if len(files) > 5:

@@ -12,7 +12,7 @@ class GemmaQA(QA):
     """
 
     default_prompt = (
-        "You are a question answering agent."
+        "You are a question answering agent. "
         "Generate your response by following the steps below: "
         "1. Read the context and the question. "
         "2. Select the most relevant information from the context. "
@@ -25,7 +25,9 @@ class GemmaQA(QA):
         ""
         "CONTEXT: {chunks} "
         ""
-        "QUESTION: {question}")
+        "QUESTION: {question} "
+        ""
+        "FINAL_ANSWER: ")
 
     def __init__(self, name: str, prompt: str = default_prompt, api_key: str = None):
         super().__init__(name)
@@ -80,4 +82,4 @@ class GemmaQA(QA):
             time.sleep(10)
             return self.predict(question, chunks)
 
-        return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
+        return response.json()[0]["generated_text"].split("[/INST]")[-1].strip().split("FINAL_ANSWER: ")[-1].strip()

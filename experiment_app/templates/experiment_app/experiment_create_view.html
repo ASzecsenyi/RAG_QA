@@ -87,7 +87,7 @@
 
         .card.compact:hover {
             z-index: 1050; /* Bootstrap modal z-index starts at 1050, ensure it's on top */
-            position: fixed; /* Ensure it doesn't move other components */
+            position: fixed; /* Ensure it doesn't move other components */  
             height: auto; /* Let it expand to natural height */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better focus */
         }
@@ -300,9 +300,9 @@
                 top_k: 5,
                 ranker_name: "sent_embedding_ranker_"
             },
-            CrossEncoderRanker: {
+            CrossEncodingRanker: {
                 top_k: 5,
-                ranker_name: "cross_encoder_ranker_"
+                ranker_name: "cross_encoding_ranker_"
             },
             GuessSimilarityRanker: {
                 top_k: 3,
@@ -333,10 +333,12 @@
         },
         NewsQaDocument: {
             NewsQaDocument: {
-                story_id: './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story'
+                story_id: './cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story',
+                newsqa_name: "newsqa_"
             },
             QAsperDocument: {
-                story_id: '1911.10742'
+                story_id: '1911.10742',
+                newsqa_name: "qasper_"
             }
         }
     };
@@ -356,7 +358,7 @@
 
         const html = `
             <div class="card-wrapper ExperimentTextDocument">
-                <div class="card mb-3 compact">
+                <div class="card compact">
                     <div class="card-header component-title">Text ${TextDocumentIndexCount + 1}</div>
                     <div class="card-body">
                         <div class="form-floating mb-3">
@@ -392,7 +394,7 @@
 
         const html = `
     <div class="card-wrapper ExperimentTextDocument">
-        <div class="card mb-3 compact">
+        <div class="card compact">
             <div class="card-header component-title">NewsQA ${NewsQaDocumentIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
@@ -429,7 +431,7 @@
         // TODO get select options from form
         const html = `
     <div class="card-wrapper ExperimentChunker">
-        <div class="card mb-3 compact">
+        <div class="card compact">
             <div class="card-header component-title">${chunker_type} ${ChunkerIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
@@ -470,14 +472,14 @@
         // TODO get select options from form    
         const html = `
     <div class="card-wrapper ExperimentRanker">
-        <div class="card mb-3 compact">
+        <div class="card compact">
             <div class="card-header component-title">${ranker_type} ${RankerIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
                     <select name="ExperimentRanker_ranker_type_${RankerIndexCount}" id="ExperimentRanker_ranker_type_${RankerIndexCount}" class="form-select mb-2 saveable-input">
                         <option value="TfidfRanker" ${ranker_type==='TfidfRanker' ? 'selected=""' : '' }>TfidfRanker</option>
                         <option value="SentEmbeddingRanker" ${ranker_type==='SentEmbeddingRanker' ? 'selected=""' : '' }>SentEmbeddingRanker</option>
-                        <option value="CrossEncoderRanker" ${ranker_type==='CrossEncoderRanker' ? 'selected=""' : '' }>CrossEncoderRanker</option>
+                        <option value="CrossEncodingRanker" ${ranker_type==='CrossEncodingRanker' ? 'selected=""' : '' }>CrossEncodingRanker</option>
                         <option value="GuessSimilarityRanker" ${ranker_type==='GuessSimilarityRanker' ? 'selected=""' : '' }>GuessSimilarityRanker</option>
                         <option value="HybridRanker" ${ranker_type==='HybridRanker' ? 'selected=""' : '' }>HybridRanker</option>
                         <option value="PromptRanker" ${ranker_type==='PromptRanker' ? 'selected=""' : '' }>PromptRanker</option>
@@ -509,7 +511,7 @@
         // TODO get select options from form 
         const html = `
     <div class="card-wrapper ExperimentQA">
-        <div class="card mb-3 compact">
+        <div class="card compact">
             <div class="card-header component-title">${model_type} ${QAIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
@@ -802,31 +804,6 @@
             updateHighlights(currentElement);
         }
 
-
-        // Store the original width of each .card.compact in a data attribute
-        $('.card.compact').each(function() {
-            var originalWidth = $(this).width();
-            var originalHeight = $(this).height();
-            $(this).data('originalWidth', originalWidth);
-            $(this).data('originalHeight', originalHeight);
-        });
-    
-        $('.card-wrapper').hover(
-            function() {
-                // On mouse in, get original width of .card.compact from data attribute
-                var originalWidth = $(this).find('.card.compact').data('originalWidth');
-                var originalHeight = $(this).find('.card.compact').data('originalHeight');
-                // Set the width of .card-wrapper to the original width of .card.compact
-                $(this).css('width', originalWidth);
-                $(this).css('height', originalHeight);
-            },
-            function() {
-                // On mouse out, reset the width of .card-wrapper
-                $(this).css('width', '');
-                $(this).css('height', '');
-            }
-        );
-
         var answerCol = document.getElementById('answerCol');
         var textContent = answerCol.textContent || answerCol.innerText;
         textContent = textContent.trim();
@@ -835,11 +812,10 @@
             /* change answerDiv class to col-3 */
             answerCol.className = 'col-3';
         }
-        // For existing elements, update their classes
-        $('input[type="text"], input[type="file"], input[type="number"], select').addClass('form-control mb-2');
-        $('input[type="checkbox"]').addClass('form-check-input mb-2');
-        $('input[type="select"]').addClass('form-select mb-2');
-        $('label').addClass('form-check-label');
+        
+        // Make form name pretty
+        $('input[type="text"]').addClass('form-control mb-2');
+
 
         $('#componentsContainer .col').each(function() {
             $(this).sortable({
@@ -1004,7 +980,6 @@
                 let cardHeader = $(this).find('.card-header');
                 let selectedValue = select.val();
                 cardHeader.text(`${selectedValue} ${cardHeader.text().split(' ')[1]}`);
-
           });
 
         $(document).on('change', '.form-select', function() {
@@ -1027,6 +1002,11 @@
                     match: select.attr('name').match(/QA_(.+)_\d+/),
                     fields: ['model_name'],
                     prefix: 'ExperimentQA',
+                },
+                NewsQaDocument: {
+                    match: select.attr('name').match(/NewsQaDocument_(.+)_\d+/),
+                    fields: ['story_id', 'newsqa_name'],
+                    prefix: 'ExperimentNewsQaDocument', 
                 },
             };
 
@@ -1061,6 +1041,7 @@
                 { type: 'Chunker', regex: /(ExperimentChunker)_(.+)_\d+$/ },
                 { type: 'Ranker', regex: /(ExperimentRanker)_(.+)_\d+$/ },
                 { type: 'QA', regex: /(ExperimentQA)_(.+)_\d+$/ },
+                { type: 'NewsQaDocument', regex: /(ExperimentNewsQaDocument)_(.+)_\d+$/ },
             ];
 
             componentDetails.forEach((compDetail) => {
@@ -1082,6 +1063,33 @@
                 }
             });
         });
+
+        // Store the original width of each .card.compact in a data attribute
+        $('.card-wrapper').each(function() {
+            const originalWidth = $(this).width();
+            const originalHeight = $(this).height();
+            $(this).data('originalWidth', originalWidth);
+            $(this).data('originalHeight', originalHeight);
+        });
+        
+        $('.card-wrapper').hover(
+            function() {
+                // On mouse in, get original width of .card.compact from data attribute
+                var originalWidth = $(this).data('originalWidth');
+                var originalHeight = $(this).data('originalHeight');
+                // Set the width of .card-wrapper to the original width of .card.compact
+                $(this).css('width', originalWidth);
+                $(this).css('height', originalHeight);
+            },
+            function() {
+                // On mouse out, reset the width of .card-wrapper
+                $(this).css('width', '');
+                $(this).css('height', '');
+                // update the original width of .card.compact from the current width of .card-wrapper
+                $(this).data('originalWidth', $(this).width());
+                $(this).data('originalHeight', $(this).height());
+            }
+        );
 
 
     });
