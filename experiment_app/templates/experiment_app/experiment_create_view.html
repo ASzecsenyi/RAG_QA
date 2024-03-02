@@ -342,7 +342,7 @@
             }
         }
     };
-    
+
     let currentPipeline = [];
 
     function addTextDocumentComponent(componentData = null) {
@@ -378,19 +378,19 @@
             </div>
         `;
         $('#ExperimentTextDocument').append(html);
-        
+
         // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
         let cardWrapper = $('.ExperimentTextDocument').last();
         cardWrapper.data('originalWidth', cardWrapper.width());
         cardWrapper.data('originalHeight', cardWrapper.height());
-        
+
         // add hover functions
         cardWrapper.hover(function() {
             hoverIn($(this));
         }, function() {
             hoverOut($(this));
         });
-        
+
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         TextDocumentIndexCount++;
     }
@@ -425,19 +425,19 @@
     </div>
   `;
         $('#ExperimentTextDocument').append(html);
-        
+
         // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
         let cardWrapper = $('.ExperimentNewsQaDocument').last();
         cardWrapper.data('originalWidth', cardWrapper.width());
         cardWrapper.data('originalHeight', cardWrapper.height());
-        
+
         // add hover functions
         cardWrapper.hover(function() {
             hoverIn($(this));
         }, function() {
             hoverOut($(this));
         });
-        
+
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         NewsQaDocumentIndexCount++;
     }
@@ -467,7 +467,7 @@
                     <label for="ExperimentChunker_chunk_length_${ChunkerIndexCount}">Chunk Length</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="number" name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" id="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" class="form-control mb-2 saveable-input" value="${sliding_window_size}">
+                    <input type="number" step=any name="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" id="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}" class="form-control mb-2 saveable-input" value="${sliding_window_size}">
                     <label for="ExperimentChunker_sliding_window_size_${ChunkerIndexCount}">Sliding Window Size</label>
                 </div>
                 <div class="form-floating mb-3">
@@ -480,20 +480,20 @@
     </div>
   `;
         $('#ExperimentChunker').append(html);
-        
+
         // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
         let cardWrapper = $('.ExperimentChunker').last();
         cardWrapper.data('originalWidth', cardWrapper.width());
         cardWrapper.data('originalHeight', cardWrapper.height());
-        
+
         // add hover functions
         cardWrapper.hover(function() {
             hoverIn($(this));
         }, function() {
             hoverOut($(this));
         });
-        
-        
+
+
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         ChunkerIndexCount++;
     }
@@ -534,20 +534,20 @@
     </div>
   `;
         $('#ExperimentRanker').append(html);
-        
+
         // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
         let cardWrapper = $('.ExperimentRanker').last();
         cardWrapper.data('originalWidth', cardWrapper.width());
         cardWrapper.data('originalHeight', cardWrapper.height());
-        
+
         // add hover functions
         cardWrapper.hover(function() {
             hoverIn($(this));
         }, function() {
             hoverOut($(this));
         });
-        
-        
+
+
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         RankerIndexCount++;
     }
@@ -581,20 +581,20 @@
     </div>
   `;
         $('#ExperimentQA').append(html);
-        
+
         // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
         let cardWrapper = $('.ExperimentQA').last();
         cardWrapper.data('originalWidth', cardWrapper.width());
         cardWrapper.data('originalHeight', cardWrapper.height());
-        
+
         // add hover functions
         cardWrapper.hover(function() {
             hoverIn($(this));
         }, function() {
             hoverOut($(this));
         });
-        
-        
+
+
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         QAIndexCount++;
     }
@@ -757,7 +757,7 @@
             input.val(newValue);
         });
     }
-    
+
     function hoverIn(cardWrapper) {
         // On mouse in, get original width of .card.compact from data attribute
         var originalWidth = cardWrapper.data('originalWidth');
@@ -766,7 +766,7 @@
         cardWrapper.css('width', originalWidth);
         cardWrapper.css('height', originalHeight);
     }
-    
+
     function hoverOut(cardWrapper) {
         // On mouse out, reset the width of .card-wrapper
         cardWrapper.css('width', '');
@@ -886,7 +886,7 @@
             var answerCol = document.getElementById('answerCol');
             var textContent = answerCol.textContent || answerCol.innerText;
             textContent = textContent.trim();
-    
+
             if (!textContent) {
                 /* change answerDiv class to col-3 */
                 answerCol.className = 'col-3';
@@ -1016,7 +1016,7 @@
         });
 
         // Below is the code to handle the scrolling of the components
-        
+
         // Scroll the card-wrapper select when the mouse is over it and the mousewheel is used
         $(document).on('wheel', '.card', function(e) {
               // Find the select element within the card
@@ -1067,7 +1067,7 @@
             if (!index) {
                 index = 0;
             }
-            
+
             const componentMapping = {
                 Chunker: {
                     match: select.attr('name').match(/Chunker_(.+)_\d+/),
@@ -1087,7 +1087,7 @@
                 NewsQaDocument: {
                     match: select.attr('name').match(/NewsQaDocument_(.+)_\d+/),
                     fields: ['num_of_stories', 'newsqa_name'],
-                    prefix: 'ExperimentNewsQaDocument', 
+                    prefix: 'ExperimentNewsQaDocument',
                 },
             };
 
