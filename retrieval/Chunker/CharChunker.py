@@ -12,6 +12,8 @@ class CharChunker(Chunker):
         super().__init__(chunk_length, sliding_window_size, name)
 
     def chunk(self, document: str) -> list[str]:
+        if len(document) < self.chunk_length:
+            return [document]
         return [document[i:i + self.chunk_length] for i in
                 range(
                     0,

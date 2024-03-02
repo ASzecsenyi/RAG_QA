@@ -22,6 +22,9 @@ class WordChunker(Chunker):
     def chunk(self, document: str) -> list[str]:
         words = nltk.word_tokenize(document)
 
+        if len(words) < self.chunk_length:
+            return [' '.join(words)]
+
         return [' '.join(words[i:i + self.chunk_length]) for i in
                 range(
                     0,

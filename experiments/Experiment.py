@@ -2,6 +2,7 @@ import json
 import os
 import time
 from datetime import datetime
+from uuid import uuid4
 
 import numpy as np
 from ragas import evaluate
@@ -86,6 +87,8 @@ class Experiment:
         """
         self.evaluation = None
         self.name = name
+        if name is None:
+            self.name = "experiment-" + str(uuid4())
         self.description = description
 
         self.dataset = dataset
@@ -153,6 +156,8 @@ class Experiment:
                     print(f"Results for {dataset.name}, {chunker.name} already found, skipping")
                     continue
                 chunks = self.r(chunker.chunk, f"Chunking with {chunker.name}", times, document=dataset.document)
+
+                print(chunks)
 
                 for ranker in self.ranker:
                     if isinstance(self.results, dict) and all(result_setup in self.results for result_setup in [f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}" for qa in self.qa]):

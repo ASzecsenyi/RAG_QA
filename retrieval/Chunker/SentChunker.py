@@ -22,6 +22,9 @@ class SentChunker(Chunker):
     def chunk(self, document: str) -> list[str]:
         sentences = nltk.sent_tokenize(document)
 
+        if len(sentences) < self.chunk_length:
+            return [' '.join(sentences)]
+
         return [' '.join(sentences[i:i + self.chunk_length]) for i in
                 range(
                     0,
