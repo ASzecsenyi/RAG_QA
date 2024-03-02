@@ -346,7 +346,8 @@
     let customValues = {
         Chunker: {},
         Ranker: {},
-        QA: {}
+        QA: {},
+        NewsQaDocument: {}
     };
     let currentPipeline = [];
 
@@ -667,8 +668,10 @@
             // if the value of the text input is the same as the component name, then add the class highlighted
             names.forEach((name) => {
                 let componentWrapper = $(`input[name*="${name}"]`).filter(function() {
-                    // TODO handle newssqa and qasper
-                    return this.value === component || (component.startsWith(this.value) && this.value in ['newsqa', 'qasper']);
+                    if (this.value === 'newsqa' || this.value === 'qasper') {
+                        return component.startsWith(this.value);
+                    }
+                    return this.value === component;
                 }).closest('.card');
                 componentWrapper.addClass('highlighted-component');
 
