@@ -1,15 +1,22 @@
 from data.NewsQaDocument import NewsQaDocument
 from data.UXDocument import UXDocument, chapters
-# from data.TextDocument import TextDocument
+from data.TextDocument import TextDocument
+from data.QAsperDocument import QAsperDocument
 from experiments.Experiment import Experiment
 from qa.MistralQA import MistralQA
 from qa.GptQA import GptQA
+from qa.GemmaQA import GemmaQA
 from qa.LlamaQA import LlamaQA
 from retrieval.Chunker.CharChunker import CharChunker
 from retrieval.Chunker.SentChunker import SentChunker
+from retrieval.Chunker.WordChunker import WordChunker
 from retrieval.Ranker.TfidfRanker import TfidfRanker
 from retrieval.Ranker.SentEmbeddingRanker import SentEmbeddingRanker
 from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
+from retrieval.Ranker.HybridRanker import HybridRanker
+from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
+from retrieval.Ranker.PromptRanker import PromptRanker
+from retrieval.Ranker import RandomRanker
 
 import json
 
@@ -317,13 +324,219 @@ top_300 = [
     "./cnn/stories/1ea7971780538f433c42704ccb6e94e2cb1546c2.story",
 ]
 
+qasper = [
+    "1911.10742",
+    "1904.09131",
+    "1611.06322",
+    "1604.02038",
+    "1911.04474",
+    "1905.00840",
+    "1810.02229",
+    "1909.00091",
+    "1909.04387",
+    "2003.13016",
+    "1805.11937",
+    "1909.09070",
+    "1708.05521",
+    "1908.11049",
+    "1907.10676",
+    "1906.08871",
+    "2004.04124",
+    "1603.07252",
+    "1708.00549",
+    "1905.00472",
+    "1912.02866",
+    "1812.00382",
+    "1903.02930",
+    "1911.04873",
+    "1606.07043",
+    "1611.04234",
+    "1909.00437",
+    "2003.07568",
+    "1810.02268",
+    "1909.12079",
+    "2003.11687",
+    "1703.10152",
+    "1907.04072",
+    "1909.10481",
+    "1805.04833",
+    "1805.07882",
+    "2004.01820",
+    "1806.04387",
+    "1808.04122",
+    "1907.05338",
+    "2003.08437",
+    "2003.04978",
+    "1809.08935",
+    "1910.07924",
+    "1911.11899",
+    "1603.09405",
+    "1912.11585",
+    "1707.09816",
+    "1703.04009",
+    "1911.03090",
+    "1909.04242",
+    "2003.12139",
+    "1809.03391",
+    "1906.04287",
+    "1912.10162",
+    "1909.13184",
+    "1910.13793",
+    "1906.11085",
+    "1908.09892",
+    "2004.01970",
+    "1806.03369",
+    "2003.07459",
+    "1803.08614",
+    "1909.08250",
+    "1612.07486",
+    "1612.03762",
+    "1906.01010",
+    "2003.11528",
+    "1801.03615",
+    "1910.09362",
+    "1911.12559",
+    "1802.09059",
+    "1803.09000",
+    "1909.06708",
+    "1705.10754",
+    "1706.08568",
+    "1909.05190",
+    "1606.02601",
+    "1602.04341",
+    "1908.02284",
+    "1907.00168",
+    "1911.09709",
+    "1909.11232",
+    "1808.09180",
+    "1909.04251",
+    "1912.11980",
+    "2004.04060",
+    "1807.08089",
+    "1703.05320",
+    "1910.10762",
+    "1711.01567",
+    "1706.04206",
+    "1707.06875",
+    "1708.07690",
+    "1804.05253",
+    "1805.11598",
+    "1610.03955",
+    "1610.03807",
+    "1607.03895",
+    "1704.06960",
+    "1904.03670",
+    "2004.02363",
+    "1601.03313",
+    "1910.01108",
+    "1707.06519",
+    "1710.07394",
+    "1912.06905",
+    "1708.03312",
+    "1908.05731",
+    "1808.10059",
+    "1911.12848",
+    "1911.01770",
+    "1903.10548",
+    "1908.06893",
+    "2002.12699",
+    "1901.01590",
+    "1603.03876",
+    "1708.01065",
+    "1905.07562",
+    "1911.12893",
+    "1910.07973",
+    "1603.08868",
+    "1910.01340",
+    "1709.09749",
+    "2003.09244",
+    "1709.04491",
+    "1908.07491",
+    "1805.11850",
+    "1710.06923",
+    "1811.04791",
+    "1906.01749",
+    "2004.02334",
+    "1908.11046",
+    "1906.01076",
+    "1908.09919",
+    "1910.10670",
+    "1902.06734",
+    "1907.08540",
+    "1611.04887",
+    "1808.10006",
+    "1702.02584",
+    "1709.05453",
+    "2002.06854",
+    "1906.05506",
+    "1808.00957",
+    "1808.07231",
+    "1712.02555",
+    "1909.02322",
+    "1805.04579",
+    "1908.10149",
+    "1803.07828",
+    "1803.08419",
+    "1908.08917",
+    "1804.07445",
+    "1910.03355",
+    "1603.09381",
+    "1708.05482",
+    "1707.05589",
+    "1910.14589",
+    "1801.05617",
+    "1905.08067",
+    "1910.03943",
+    "1911.12722",
+    "1909.00786",
+    "1909.03087",
+    "2004.02105",
+    "1909.01720",
+    "1908.10090",
+    "1905.05644",
+    "1910.07154",
+    "1901.09501",
+    "1705.02023",
+    "1912.06203",
+    "1809.05807",
+    "1904.02954",
+    "1804.03839",
+    "2004.02214",
+    "1911.05652",
+    "1703.10090",
+    "1905.10039",
+    "1704.06851",
+    "1911.06815",
+    "1704.08390",
+    "1911.03642",
+    "1911.01214",
+    "1701.03578",
+    "1802.09233",
+    "1902.08830",
+    "1909.08357",
+    "1801.04433",
+    "1908.07888",
+    "2003.03131",
+    "1903.01411",
+    "2004.03090",
+    "1709.06365",
+    "1901.10619",
+    "1612.09535",
+    "1910.02001",
+    "1603.01547",
+    "1912.00239",
+]
+
 # document = NewsQaDocument(name="newsqa_1", story_id='./cnn/stories/289a45e715707cf650352f3eaa123f85d3653d4b.story')
 # document2 = NewsQaDocument(name="newsqa_2", story_id='./cnn/stories/bce33bb5b5cff6b93065aa0cf91917c8dd36ac78.story')
 # document3 = NewsQaDocument(name="newsqa_3", story_id='./cnn/stories/017df5c4fe1e79eb26957ff6a8b4c1e41cd966ac.story')
 # documents = [UXDocument(name=f"ux_{chapter}", chapter=chapter) for chapter in chapters]
-document = UXDocument()
+# document = UXDocument()
 
-documents = [NewsQaDocument(name=f"newsqa_{i}", story_id=story, split='train') for i, story in enumerate(top_300[:150])]
+# documents = [NewsQaDocument(name=f"newsqa_{i}", story_id=story, split='train') for
+#              i, story in enumerate(top_300[:150])]
+
+documents = [QAsperDocument(name=f"qasper_{i}", story_id=qa) for i, qa in enumerate(qasper[:5])]
 
 num_of_total_questions = sum([len(doc.questions) for doc in documents])
 print(f"Total number of questions: {num_of_total_questions}")
@@ -333,28 +546,40 @@ print(f"Total number of questions: {num_of_total_questions}")
 # chunker = CharChunker(chunk_length=100, sliding_window_size=0.5)
 chunker = SentChunker(chunk_length=2, sliding_window_size=0.5)
 chunker2 = CharChunker(chunk_length=200, sliding_window_size=0.5)
+chunker3 = WordChunker(chunk_length=100, sliding_window_size=0.5)
 
-ranker = TfidfRanker(top_k=5)
-ranker1 = SentEmbeddingRanker(top_k=5)
-ranker2 = GuessSimilarityRanker(top_k=5)
+
+tfidf_ranker = TfidfRanker(top_k=5)
+# se_ranker = SentEmbeddingRanker(top_k=5)
+ce_ranker = CrossEncodingRanker(top_k=5)
+gs_ranker = GuessSimilarityRanker(top_k=5)
+hy_ranker = HybridRanker(top_k=5)
+random_ranker = RandomRanker(top_k=5)
+p_ranker = PromptRanker(top_k=5)
+
+# hy_ranker_s2 = HybridRanker(top_k=5, sparse_weight=0.2)
+# hy_ranker_s3 = HybridRanker(top_k=5, sparse_weight=0.35)
+# hy_ranker_s6 = HybridRanker(top_k=5, sparse_weight=0.65)
+# hy_ranker_s8 = HybridRanker(top_k=5, sparse_weight=0.8)
 
 mi_qa = MistralQA(name="mistralqa")
 lam_qa = LlamaQA(name="llamaqa")
+gem_qa = GemmaQA(name="gemmaqa")
 
 # gpt_qa = GptQA(name="gptqa")
 
 experiment = Experiment(
-    name="test_long_150_llama2",
+    name="test_prompt_ranker",
     description="test",
     dataset=documents,
-    chunker=[chunker, chunker2],
-    ranker=[ranker, ranker1, ranker2],
-    qa=lam_qa  # , gpt_qa]
+    chunker=[chunker],
+    ranker=[p_ranker],#, ce_ranker, gs_ranker, hy_ranker, random_ranker],
+    qa=[gem_qa]# mi_qa, lam_qa]  # , gpt_qa]
 )
 
 experiment.verbose = True
 
-results = experiment.run()
+results = experiment.run(get_ground_ranks=True)
 # results = experiment.load_results("../data/files/test.json")
 
 # pretty print results
