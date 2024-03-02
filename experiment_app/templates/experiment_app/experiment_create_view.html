@@ -342,13 +342,7 @@
             }
         }
     };
-
-    let customValues = {
-        Chunker: {},
-        Ranker: {},
-        QA: {},
-        NewsQaDocument: {}
-    };
+    
     let currentPipeline = [];
 
     function addTextDocumentComponent(componentData = null) {
@@ -384,6 +378,19 @@
             </div>
         `;
         $('#ExperimentTextDocument').append(html);
+        
+        // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
+        let cardWrapper = $('.ExperimentTextDocument').last();
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
+        
+        // add hover functions
+        cardWrapper.hover(function() {
+            hoverIn($(this));
+        }, function() {
+            hoverOut($(this));
+        });
+        
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         TextDocumentIndexCount++;
     }
@@ -394,9 +401,9 @@
         let newsqa_name = componentData ? componentData.newsqa_name : `newsqa`;
 
         const html = `
-    <div class="card-wrapper ExperimentTextDocument">
+    <div class="card-wrapper ExperimentNewsQaDocument">
         <div class="card compact">
-            <div class="card-header component-title">NewsQA ${NewsQaDocumentIndexCount + 1}</div>
+            <div class="card-header component-title">${newsqa_type} ${NewsQaDocumentIndexCount + 1}</div>
             <div class="card-body">
                 <div class="form-floating mb-3">
                     <select name="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}" class="form-select mb-2 saveable-input">
@@ -406,18 +413,31 @@
                     <label for="ExperimentNewsQaDocument_newsqa_type_${NewsQaDocumentIndexCount}">Document Type</label>
                 </div>
                 <label for="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}">Num of Stories</label>
-                <input type="range" name="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" class="form-range" min="0" max="200" value="${num_of_stories}"  oninput="this.nextElementSibling.value = this.value">
+                <input type="range" name="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_num_of_stories_${NewsQaDocumentIndexCount}" class="form-range saveable-input" min="0" max="200" value="${num_of_stories}"  oninput="this.nextElementSibling.value = this.value">
                 <output>${num_of_stories}</output>
                 <div class="form-floating mb-3">
                     <input type="text" name="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" id="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}" class="form-control mb-2 saveable-input" value="${newsqa_name}">
                     <label for="ExperimentNewsQaDocument_newsqa_name_${NewsQaDocumentIndexCount}">NewsQA Name</label>
                 </div>
-                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentTextDocument_${NewsQaDocumentIndexCount}" value="delete"> Delete
+                <input type="checkbox" class="${ componentData == null ? 'deletable-component' : ''} form-check-input mb-2" name="delete_ExperimentNewsQaDocument_${NewsQaDocumentIndexCount}" value="delete"> Delete
             </div>
         </div>
     </div>
   `;
         $('#ExperimentTextDocument').append(html);
+        
+        // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
+        let cardWrapper = $('.ExperimentNewsQaDocument').last();
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
+        
+        // add hover functions
+        cardWrapper.hover(function() {
+            hoverIn($(this));
+        }, function() {
+            hoverOut($(this));
+        });
+        
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         NewsQaDocumentIndexCount++;
     }
@@ -460,6 +480,20 @@
     </div>
   `;
         $('#ExperimentChunker').append(html);
+        
+        // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
+        let cardWrapper = $('.ExperimentChunker').last();
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
+        
+        // add hover functions
+        cardWrapper.hover(function() {
+            hoverIn($(this));
+        }, function() {
+            hoverOut($(this));
+        });
+        
+        
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         ChunkerIndexCount++;
     }
@@ -500,6 +534,20 @@
     </div>
   `;
         $('#ExperimentRanker').append(html);
+        
+        // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
+        let cardWrapper = $('.ExperimentRanker').last();
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
+        
+        // add hover functions
+        cardWrapper.hover(function() {
+            hoverIn($(this));
+        }, function() {
+            hoverOut($(this));
+        });
+        
+        
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         RankerIndexCount++;
     }
@@ -533,6 +581,20 @@
     </div>
   `;
         $('#ExperimentQA').append(html);
+        
+        // set the data of the newly added card-wrapper to store the originalWidth and originalHeight
+        let cardWrapper = $('.ExperimentQA').last();
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
+        
+        // add hover functions
+        cardWrapper.hover(function() {
+            hoverIn($(this));
+        }, function() {
+            hoverOut($(this));
+        });
+        
+        
         $('input[type="checkbox"].deletable-component').on('click', deleteComponent);
         QAIndexCount++;
     }
@@ -689,16 +751,29 @@
             let input = $(`input[name="${inputName}"]`);
             let newValue = defaultValues[compType][selectedValue][field];
 
-            if (field.includes('_name')) {
+            if (field.includes('_name') && !(compType === 'NewsQaDocument')) {
                 newValue += index;
             }
-
-            if (!customValues[compType][index][selectedValue] || !customValues[compType][index][selectedValue][field]) {
-                input.val(newValue);
-            } else {
-                input.val(customValues[compType][index][selectedValue][field]);
-            }
+            input.val(newValue);
         });
+    }
+    
+    function hoverIn(cardWrapper) {
+        // On mouse in, get original width of .card.compact from data attribute
+        var originalWidth = cardWrapper.data('originalWidth');
+        var originalHeight = cardWrapper.data('originalHeight');
+        // Set the width of .card-wrapper to the original width of .card.compact
+        cardWrapper.css('width', originalWidth);
+        cardWrapper.css('height', originalHeight);
+    }
+    
+    function hoverOut(cardWrapper) {
+        // On mouse out, reset the width of .card-wrapper
+        cardWrapper.css('width', '');
+        cardWrapper.css('height', '');
+        // update the original width of .card.compact from the current width of .card-wrapper
+        cardWrapper.data('originalWidth', cardWrapper.width());
+        cardWrapper.data('originalHeight', cardWrapper.height());
     }
 
 
@@ -710,7 +785,6 @@
         initialData.forEach(component => {
             switch(component.type) {
                     case 'ExperimentTextDocument':
-    
                         addTextDocumentComponent(component.data);
                         break;
     
@@ -792,34 +866,36 @@
     });
 
     $(document).ready(function () {
-        let componentHighlighter = $('.component-highlighter');
-        let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
-        let currentElement = componentHighlighterElements.filter(function() {
-            let rect = this.getBoundingClientRect();
-            return (
-                rect.top <= componentHighlighter.height()
-                && rect.bottom >= 0
-            );
-        });
-        // if the currentElement is not empty, then we have an element in view
-        if (currentElement.length) {
-            // get the components whose names are in the currentElementId
-            updateHighlights(currentElement);
-        }
+        // highlight initial components
+            let componentHighlighter = $('.component-highlighter');
+            let componentHighlighterElements = componentHighlighter.find('.component-highlighter-element');
+            let currentElement = componentHighlighterElements.filter(function() {
+                let rect = this.getBoundingClientRect();
+                return (
+                    rect.top <= componentHighlighter.height()
+                    && rect.bottom >= 0
+                );
+            });
+            // if the currentElement is not empty, then we have an element in view
+            if (currentElement.length) {
+                // get the components whose names are in the currentElementId
+                updateHighlights(currentElement);
+            }
 
-        var answerCol = document.getElementById('answerCol');
-        var textContent = answerCol.textContent || answerCol.innerText;
-        textContent = textContent.trim();
-
-        if (!textContent) {
-            /* change answerDiv class to col-3 */
-            answerCol.className = 'col-3';
-        }
+        // hold out place for results
+            var answerCol = document.getElementById('answerCol');
+            var textContent = answerCol.textContent || answerCol.innerText;
+            textContent = textContent.trim();
+    
+            if (!textContent) {
+                /* change answerDiv class to col-3 */
+                answerCol.className = 'col-3';
+            }
         
         // Make form name pretty
-        $('input[type="text"]').addClass('form-control mb-2');
+            $('input[type="text"]').addClass('form-control mb-2');
 
-
+        // Make components sortable
         $('#componentsContainer .col').each(function() {
             $(this).sortable({
                 items: ".card-wrapper",
@@ -917,7 +993,6 @@
             }
         });
 
-
         // update the highlights based on the component-highlighter-element that is currently in view
         $(document).on('wheel', '.component-highlighter', function(e) {    
             // find the component-highlighter-element that is currently in view
@@ -936,15 +1011,13 @@
             // if the currentElement is not empty, then we have an element in view
             if (currentElement.length) {
                 let rect = currentElement[0].getBoundingClientRect();
-                console.log('bottom', rect.bottom);
-                console.log('top', rect.top);
-                console.log('height', componentHighlighter.height());
-                console.log('offsetTop', componentHighlighter.offset().top);
                 updateHighlights(currentElement);
             }
         });
 
         // Below is the code to handle the scrolling of the components
+        
+        // Scroll the card-wrapper select when the mouse is over it and the mousewheel is used
         $(document).on('wheel', '.card', function(e) {
               // Find the select element within the card
               let select = $(this).find('.form-select');
@@ -985,11 +1058,16 @@
                 cardHeader.text(`${selectedValue} ${cardHeader.text().split(' ')[1]}`);
           });
 
+        // Update all the input values when the select value changes
         $(document).on('change', '.form-select', function() {
             let select = $(this);
             let selectedValue = select.val();
             let index = select.attr('name').match(/\d+$/)[0];
-
+            // if no match, index = 0
+            if (!index) {
+                index = 0;
+            }
+            
             const componentMapping = {
                 Chunker: {
                     match: select.attr('name').match(/Chunker_(.+)_\d+/),
@@ -1015,11 +1093,7 @@
 
             Object.keys(componentMapping).forEach((compType) => {
                 let comp = componentMapping[compType];
-                if (comp.match && comp.match[1] === compType.toLowerCase() + '_type') {
-                    if (!customValues[compType][index]) {
-                        customValues[compType][index] = {};
-                    }
-
+                if (comp.match && comp.match[1].endsWith('_type')) {
                     updateInputValues(comp, compType, selectedValue, index);
                 }
             });
@@ -1034,67 +1108,15 @@
                 parentCard.removeClass('wobble-effect');
             });
         });
-
-        $(document).on('input', '.saveable-input', function() {
-            let input = $(this);
-            let inputName = input.attr('name');
-            let index = inputName.match(/\d+$/)[0];
-
-            const componentDetails = [
-                { type: 'Chunker', regex: /(ExperimentChunker)_(.+)_\d+$/ },
-                { type: 'Ranker', regex: /(ExperimentRanker)_(.+)_\d+$/ },
-                { type: 'QA', regex: /(ExperimentQA)_(.+)_\d+$/ },
-                { type: 'NewsQaDocument', regex: /(ExperimentNewsQaDocument)_(.+)_\d+$/ },
-            ];
-
-            componentDetails.forEach((compDetail) => {
-                let match = inputName.match(compDetail.regex);
-                if (match) {
-                    let fieldType = match[2];
-                    let compType = match[1].split('Experiment')[1];
-                    let selector = $(`select[name="${compDetail.type}_${compType.toLowerCase()}_type_${index}"]`).val();
-
-                    if (!customValues[compDetail.type][index]) {
-                        customValues[compDetail.type][index] = {};
-                    }
-
-                    if (!customValues[compDetail.type][index][selector]) {
-                        customValues[compDetail.type][index][selector] = {};
-                    }
-
-                    customValues[compDetail.type][index][selector][fieldType] = input.val();
-                }
-            });
-        });
-
-        // Store the original width of each .card.compact in a data attribute
-        $('.card-wrapper').each(function() {
-            const originalWidth = $(this).width();
-            const originalHeight = $(this).height();
-            $(this).data('originalWidth', originalWidth);
-            $(this).data('originalHeight', originalHeight);
-        });
         
         $('.card-wrapper').hover(
             function() {
-                // On mouse in, get original width of .card.compact from data attribute
-                var originalWidth = $(this).data('originalWidth');
-                var originalHeight = $(this).data('originalHeight');
-                // Set the width of .card-wrapper to the original width of .card.compact
-                $(this).css('width', originalWidth);
-                $(this).css('height', originalHeight);
+                hoverIn($(this));
             },
             function() {
-                // On mouse out, reset the width of .card-wrapper
-                $(this).css('width', '');
-                $(this).css('height', '');
-                // update the original width of .card.compact from the current width of .card-wrapper
-                $(this).data('originalWidth', $(this).width());
-                $(this).data('originalHeight', $(this).height());
+                hoverOut($(this));
             }
         );
-
-
     });
 </script>
 
