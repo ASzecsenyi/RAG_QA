@@ -140,6 +140,7 @@ class Experiment:
         results = {}
 
         times = {}
+
         if self.autoload:
             try:
                 self.load_results(get_name=False)
@@ -147,6 +148,10 @@ class Experiment:
                 times = results["times"]
             except FileNotFoundError:
                 print("No results found, running experiment")
+
+        start_time = time.time()
+        total_num_of_results = len(self.qa) * len(self.chunker) * len(self.ranker) * sum([len(dataset.questions) for dataset in self.dataset])
+        num_of_processed_results = 0
 
         for dataset in self.dataset:
             if hasattr(dataset, "paragraphs"):
@@ -168,6 +173,10 @@ class Experiment:
                         self.r(ranker.init_chunks, f"Initialising ranker {ranker.name} with chunks", times, chunks=chunks)
 
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
+                    if num_of_processed_results > 0:
+                        # calculate time left estimate
+                        time_left = (total_num_of_results - num_of_processed_results) * (time.time() - start_time) / num_of_processed_results
+                        print(f"{datetime.now().strftime('%H:%M:%S')}: Estimated time left: {datetime.fromtimestamp(time_left).strftime('%H:%M:%S')}")
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
                         if not get_ground_ranks:
                             contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True)
@@ -213,6 +222,7 @@ class Experiment:
                                     result["ground_distance"] = ground_distance
 
                                 results[f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}"].append(result)
+                                num_of_processed_results += 1
                             else:
                                 # if self.verbose:
                                 print(f"Question {question['question']} already answered")

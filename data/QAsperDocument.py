@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, Literal
 
 from data import Document
@@ -254,24 +255,45 @@ class QAsperDocument(Document):
             answer = story['qas']['answers'][i]['answer']
             evidence = []
             ground_truths = []
+            answer_types = ['NONE', 'UNANSWERABLE', 'YES_NO', 'FREE_FORM', 'EXTRACTIVE']
+            answer_type = 'NONE'
             # dict_keys(['unanswerable', 'extractive_spans', 'yes_no', 'free_form_answer', 'evidence', 'highlighted_evidence'])
             # print(answer)
             for i, ans in enumerate(answer):
                 if ans['unanswerable']:
-                    ground_truths.append("[UNKNOWN]")
+                    if answer_types.index(answer_type) < answer_types.index('UNANSWERABLE'):
+                        ground_truths.append("[UNKNOWN]")
+                        answer_type = 'UNANSWERABLE'
                 elif len(ans['extractive_spans']) > 0:
-                    ground_truths += ans['extractive_spans']
+                    if answer_types.index(answer_type) < answer_types.index('EXTRACTIVE'):
+                        ground_truths += ans['extractive_spans']
+                        answer_type = 'EXTRACTIVE'
+                    break
                 elif ans['yes_no'] is not None:
-                    ground_truths.append(str(ans['yes_no']))
+                    if answer_types.index(answer_type) < answer_types.index('YES_NO'):
+                        ground_truths.append('Yes.' if ans['yes_no'] else 'No.')
+                        answer_type = 'YES_NO'
                 elif len(ans['free_form_answer']) > 0:
-                    ground_truths.append(ans['free_form_answer'])
+                    if answer_types.index(answer_type) < answer_types.index('FREE_FORM'):
+                        ground_truths.append(ans['free_form_answer'])
+                        answer_type = 'FREE_FORM'
                 evidence.append(ans['highlighted_evidence'])
+
+            if len(ground_truths) == 0:
+                ground_truths.append("[UNKNOWN]")
+
+            # if answer_types.index(answer_type) < answer_types.index('EXTRACTIVE'):
+            #     warnings.warn(f"Only {answer_type} or worse answers found for question {question}.")
+            # if answer_type == 'FREE_FORM':
+            #     print(question)
+            #     print(ground_truths[-1])
 
             questions.append(
                 {
                     "question": question,
                     "evidence": evidence,
-                    "ground_truths": ground_truths,
+                    "answer_type": answer_type,
+                    "ground_truths": [ground_truths[-1]],
                 }
             )
 
