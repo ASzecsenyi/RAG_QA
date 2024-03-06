@@ -22,11 +22,11 @@ from retrieval.Ranker import RandomRanker
 # document = UXDocument()
 
 newsqa_documents = [NewsQaDocument(name=f"newsqa_{i}", story_id=story, split='train') for
-             i, story in enumerate(newsqa_top_300[:75])]
+             i, story in enumerate(newsqa_top_300[:100])]
 
-qasper_documents = [QAsperDocument(name=f"qasper_{i}", story_id=qa) for i, qa in enumerate(qasper_top_200[:150])]
+qasper_documents = [QAsperDocument(name=f"qasper_{i}", story_id=qa) for i, qa in enumerate(qasper_top_200[:200])]
 
-documents = newsqa_documents# + qasper_documents
+documents = newsqa_documents + qasper_documents
 
 num_of_total_questions = sum([len(doc.questions) for doc in documents])
 print(f"Total number of questions: {num_of_total_questions}")
@@ -44,10 +44,9 @@ for doc in qasper_documents:
             qasper_answer_types[answer_type] = 1
 
 print(qasper_answer_types)
-
 chunker = SentChunker(chunk_length=2, sliding_window_size=0.5)
-# chunker2 = CharChunker(chunk_length=200, sliding_window_size=0.5)
-# chunker3 = WordChunker(chunk_length=100, sliding_window_size=0.5)
+chunker1 = SentChunker(chunk_length=3, sliding_window_size=0.5)
+chunker2 = SentChunker(chunk_length=4, sliding_window_size=0.5)
 
 
 tfidf_ranker = TfidfRanker(top_k=5)
@@ -61,15 +60,18 @@ p_ranker = PromptRanker(top_k=5)
 mi_qa = MistralQA(name="mistralqa")
 lam_qa = LlamaQA(name="llamaqa")
 gem_qa = GemmaQA(name="gemmaqa")
-# gpt_qa = GptQA(name="gptqa")
+gpt_qa = GptQA(name="gptqa", api_key="")
+
+all_qas = [mi_qa, lam_qa, gem_qa, gpt_qa]
 
 experiment = Experiment(
-    name="__",
-    description="test",
+    name="Final_Overall_Experiment",
+    description="Uniform prompts, All default rankers, SentChunker, 5 top_k, 100 newsqa, 200 qasper, 300 total"
+                "06/03/2024: 21:52",
     dataset=documents,
     chunker=[chunker],
     ranker=[ce_ranker],#, ce_ranker, gs_ranker, hy_ranker, random_ranker],
-    qa=[mi_qa],# mi_qa, lam_qa]  # , gpt_qa]
+    qa=gem_qa,  # [mi_qa],# mi_qa, lam_qa]  # , gpt_qa]
     autoload=False
 )
 
