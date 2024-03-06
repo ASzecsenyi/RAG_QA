@@ -11,10 +11,20 @@ class LlamaQA(QA):
     Llama QA model.
     """
 
-    default_prompt = ("<s>[INST] {chunks} [/INST] "
-                      "Thank you, I will now answer your question based on this information with a single short sentence. "
-                      "</s><s>"
-                      "[INST] {question} [/INST]")
+    default_prompt = (
+        "<s>[INST] YYou are a question answering agent."
+        "Answer the question based on the context. "
+        "Be as concise as possible, I cannot read too long answers. "
+        "If you cannot answer the question, say [UNKNOWN]. "
+        "If the question can be answered with yes or no, only say Yes or No."
+        "Otherwise answer with a single sentence."
+        "Only show your final answer! Do not provide any explanation or reasoning."
+        ""
+        "CONTEXT: {chunks} "
+        ""
+        "QUESTION: {question}"
+        ""
+        "ANSWER:[/INST]")
 
     def __init__(self, name: str, prompt: str = default_prompt, api_key: str = None):
         super().__init__(name)
@@ -66,4 +76,3 @@ class LlamaQA(QA):
             return self.predict(question, chunks)
 
         return response.json()[0]["generated_text"].split("[/INST]")[-1].strip()
-

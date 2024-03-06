@@ -12,20 +12,19 @@ class MistralQA(QA):
     """
 
     default_prompt = (
-        "<s>[INST] You are a question answering agent."
-        "Generate your response by following the steps below: "
-        "1. Read the context and the question. "
-        "2. Select the most relevant information from the context. "
-        "3. Determine whether the question can be answered based on the context. "
-        "4. If the question can be answered, generate a draft answer. "
-        "5. Validate that the draft answer is completely grounded in the context. "
-        "6. Generate your final answer and include the exact text from the context that supports your answer. Generate a single-sentence response that is clear, concise, and helpful. "
-        "7. If the question cannot be answered with the context, say [UNKNOWN]. This will be your final answer in this case. "
-        "8. Only show your final answer! Do not provide any explanation or reasoning. "
+        "<s>[INST] YYou are a question answering agent."
+        "Answer the question based on the context. "
+        "Be as concise as possible, I cannot read too long answers. "
+        "If you cannot answer the question, say [UNKNOWN]. "
+        "If the question can be answered with yes or no, only say Yes or No."
+        "Otherwise answer with a single sentence."
+        "Only show your final answer! Do not provide any explanation or reasoning."
         ""
         "CONTEXT: {chunks} "
         ""
-        "QUESTION: {question}[/INST]")
+        "QUESTION: {question}"
+        ""
+        "ANSWER:[/INST]")
 
     def __init__(self, name: str, prompt: str = default_prompt, api_key: str = None):
         super().__init__(name)
