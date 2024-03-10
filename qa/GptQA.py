@@ -1,3 +1,4 @@
+import time
 from typing import Union
 
 from qa import QA
@@ -63,14 +64,20 @@ class GptQA(QA):
             {"role": "system", "content": str(system)},
             {"role": "user", "content": str(user)},
         ]
-        response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
-            temperature=0,
-            max_tokens=100,
-            stop=["\n"],
-            messages=messages,
-            logprobs=logprobs,
-        )
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                temperature=0,
+                max_tokens=100,
+                stop=["\n"],
+                messages=messages,
+                logprobs=logprobs,
+            )
+        except Exception as e:
+            print(e)
+            print("Too many requests. Waiting 10 seconds.")
+            time.sleep(10)
+            return self.predict(question, chunks)
 
         if logprobs:
             return response.choices[0].message.content, response.choices[0].logprobs.content

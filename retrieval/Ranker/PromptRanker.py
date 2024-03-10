@@ -66,6 +66,8 @@ class PromptRanker(Ranker):
     def rank(self, query: str, return_similarities: bool = False) -> tuple[list[str], list[str]] | tuple[list[tuple[str, float]], list[str]]:
         paragraphs_of_choice: list[str] = self.get_paragraphs(query)
 
+        paragraphs_of_choice = [paragraph for paragraph in paragraphs_of_choice if paragraph in self.paragraphs.keys()]
+
         # print(self.paragraphs.keys())
 
         # print(paragraphs_of_choice)
@@ -88,11 +90,6 @@ class PromptRanker(Ranker):
         # all chunks if self.paragraphs is empty
         if self.paragraphs == {}:
             chunks = self.chunks
-        print("")
-
-        print(self.chunks)
-
-        print(chunks)
 
         self.model.init_chunks(chunks)
         return self.model.rank(query, return_similarities=return_similarities), paragraphs_of_choice
@@ -129,7 +126,7 @@ class PromptRanker(Ranker):
             r_list = r_list[0].split(";")
 
         # remove leading ordinal numbers
-        r_list = [x.split(". ", 1)[1] if x[1] == "." else x for x in r_list]
+        r_list = [x.split(". ", 1)[1] if len(x) > 0 and x[1] == "." else x for x in r_list]
 
         return r_list
 
