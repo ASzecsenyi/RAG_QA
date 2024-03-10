@@ -118,13 +118,18 @@ def experiment_create_view(request):
             experiment_run.evaluate_with_rouge_score()
             results = experiment_run.results
 
-            for chunker_name in [chunker.chunker_name for chunker in experiment.experimentchunker_set.all()]:
-                for ranker_name in [ranker.ranker_name for ranker in experiment.experimentranker_set.all()]:
-                    for qa_name in [qa.model_name for qa in experiment.experimentqa_set.all()]:
-                        for dataset_name in [text_document.textdoc_name for text_document in experiment.experimenttextdocument_set.all()]:
+
+
+            for dataset_name in [text_document.textdoc_name for text_document in experiment.experimenttextdocument_set.all()]:
+                for chunker_name in [chunker.chunker_name for chunker in experiment.experimentchunker_set.all()]:
+                    for ranker_name in [ranker.ranker_name for ranker in experiment.experimentranker_set.all()]:
+                        for qa_name in [qa.model_name for qa in experiment.experimentqa_set.all()]:
                             answers[f"{chunker_name}<sep>{ranker_name}<sep>{qa_name}<sep>{dataset_name}"] = results[f"{chunker_name}_{ranker_name}_{qa_name}_{dataset_name}"]
-                        for dataset in [news_qa_document for news_qa_document in experiment.experimentnewsqadocument_set.all()]:
-                            for story_id in range(dataset.num_of_stories):
+            for dataset in [news_qa_document for news_qa_document in experiment.experimentnewsqadocument_set.all()]:
+                for story_id in range(dataset.num_of_stories):
+                    for chunker_name in [chunker.chunker_name for chunker in experiment.experimentchunker_set.all()]:
+                        for ranker_name in [ranker.ranker_name for ranker in experiment.experimentranker_set.all()]:
+                            for qa_name in [qa.model_name for qa in experiment.experimentqa_set.all()]:
                                 answers[f"{chunker_name}<sep>{ranker_name}<sep>{qa_name}<sep>{dataset.newsqa_name}_{story_id}"] = results[f"{chunker_name}_{ranker_name}_{qa_name}_{dataset.newsqa_name}_{story_id}"]
 
             print(results)
