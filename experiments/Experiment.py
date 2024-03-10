@@ -1,15 +1,32 @@
 import json
 import os
 import time
+import warnings
 from datetime import datetime
 from uuid import uuid4
+import faiss
+import torch
 
 import numpy as np
 from ragas import evaluate
+from ragas.metrics import (
+    answer_relevancy,
+    context_precision,
+    context_recall,
+    answer_correctness,
+    answer_similarity,
+    context_relevancy,
+)
+from langchain_community.llms import HuggingFaceEndpoint
+import os
+from ragas.llms import LangchainLLMWrapper
+from ragas.embeddings import HuggingfaceEmbeddings
+
 from datasets import Dataset
 from typing import Union, Any
 from rouge_score import rouge_scorer
 from tqdm import tqdm
+from sentence_transformers import SentenceTransformer
 
 from data import Document
 from retrieval import Chunker, Ranker
@@ -45,7 +62,7 @@ def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[s
     return final_score
 
 
-def evaluate_ragas_score(results_dataset: Dataset):
+def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
     """
     Evaluates the results with ragas.
 
@@ -56,7 +73,52 @@ def evaluate_ragas_score(results_dataset: Dataset):
     :rtype: dict[str, dict[str, float]]
     """
 
-    return evaluate(dataset=results_dataset)
+    metrics = [
+        answer_relevancy,
+        context_precision,
+        context_recall,
+        context_relevancy,
+
+        # answer_correctness,
+        answer_similarity,
+    ]
+
+
+    key = os.environ["HUGGINGFACE_API_KEY"]
+    llm = HuggingFaceEndpoint(huggingfacehub_api_token=key,
+                              endpoint_url="https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1",
+                              task="text2text-generation")
+    llm = LangchainLLMWrapper(llm)
+    hf_embeddings = HuggingfaceEmbeddings(model_name="BAAI/bge-small-en")
+
+    return evaluate(dataset=results_dataset, metrics=metrics, llm=llm, embeddings=hf_embeddings, raise_exceptions=False).to_pandas().to_dict(orient="records")
+
+
+def evaluate_answer_similarity(answers: list[str], ground_truths: list[str]) -> list[float]:
+    assert len(answers) == len(ground_truths), "The number of answers and ground truths must be the same"
+    model = SentenceTransformer('BAAI/bge-small-en', device="cuda" if torch.cuda.is_available() else "cpu")
+
+    print("Encoding ground truths")
+
+    vectors = model.encode(ground_truths)
+
+    ground_truths_arr: np.ndarray = np.vstack(vectors, dtype="float32")
+
+    print("Encoding answers")
+
+    query_vector = model.encode(answers)
+
+    query_arr: np.ndarray = np.vstack(query_vector, dtype="float32")
+
+    print("Calculating distances")
+
+    all_distances = []
+
+    for i in range(len(answers)):
+        distances = np.dot(ground_truths_arr[1], query_arr[i])
+        all_distances.append(distances)
+
+    return all_distances
 
 
 class Experiment:
@@ -152,6 +214,12 @@ class Experiment:
         start_time = time.time()
         total_num_of_results = len(self.qa) * len(self.chunker) * len(self.ranker) * sum([len(dataset.questions) for dataset in self.dataset])
         num_of_processed_results = 0
+        num_of_initial_results = 0
+        for result in results.values():
+            if isinstance(result, list):
+                num_of_initial_results += len(result)
+
+        total_remaining_results = total_num_of_results - num_of_initial_results
 
         for dataset in self.dataset:
             if hasattr(dataset, "paragraphs"):
@@ -175,8 +243,8 @@ class Experiment:
                     results.update({f"{chunker.name}_{ranker.name}_{qa.name}_{dataset.name}": [] for qa in self.qa})
                     if num_of_processed_results > 0:
                         # calculate time left estimate
-                        time_left = (total_num_of_results - num_of_processed_results) * (time.time() - start_time) / num_of_processed_results
-                        print(f"{datetime.now().strftime('%H:%M:%S')}: Estimated time left: {datetime.fromtimestamp(time_left).strftime('%H:%M:%S')}")
+                        time_left = (total_remaining_results - num_of_processed_results) * (time.time() - start_time) / num_of_processed_results
+                        print(f"{datetime.now().strftime('%H:%M:%S')}: Estimated time left: {time.strftime('%d, %H:%M:%S', time.gmtime(time_left))}")
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
                         if not get_ground_ranks:
                             contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True)
@@ -229,7 +297,7 @@ class Experiment:
                             results["times"] = times
                             self.results = results
 
-                            self.save_results()
+                self.save_results()
 
         self.results = results
         return results
@@ -270,6 +338,8 @@ class Experiment:
 
         :param path: The path to load the json file from
         :type path: str
+        :param get_name: Whether to get the name of the experiment from the file
+        :type get_name: bool
         """
 
         if path is None:
@@ -303,10 +373,59 @@ class Experiment:
 
         print(f"Results loaded from {path}")
 
+    @classmethod
+    def from_results(cls, path: str):
+        """
+        Creates an experiment from a json file.
+
+        :param path: The path to the json file
+        :type path: str
+
+        :return: The experiment
+        :rtype: Experiment
+        """
+
+        with open(path, "r") as f:
+            saved_results = json.load(f)
+
+        chunker, ranker, qa, dataset = [], [], [], []
+
+        for result_setup, results in saved_results["results"].items():
+            if result_setup in ["times", "evaluations", "overall"]:
+                continue
+
+            res_setup_wds = result_setup.split("_")
+            chunker_name, ranker_name, qa_name, dataset_name = [], [], [], []
+            alpha_count = 0
+
+            order = [chunker_name, ranker_name, qa_name, dataset_name]
+
+            for word in res_setup_wds:
+                if word.isalpha():
+                    alpha_count += 1
+                order[alpha_count-1].append(word)
+
+            chunker_name = "_".join(chunker_name)
+            ranker_name = "_".join(ranker_name)
+            qa_name = "_".join(qa_name)
+            dataset_name = "_".join(dataset_name)
+
+            if chunker_name not in chunker:
+                chunker.append(chunker_name)
+            if ranker_name not in ranker:
+                ranker.append(ranker_name)
+            if qa_name not in qa:
+                qa.append(qa_name)
+            if dataset_name not in dataset:
+                dataset.append(dataset_name)
+        raise NotImplementedError("This method is not implemented yet")
+
     def evaluate_with_ragas(self):
         assert self.results is not None, "Experiment must be run before evaluation"
 
-        evalutions = {}
+        len_results = len(self.results)
+
+        j = 0
 
         for result_setup, results in self.results.items():
             if result_setup == "times":
@@ -328,34 +447,97 @@ class Experiment:
             contexts = [result["contexts"] for result in results]
 
             # get all ground truths
-            ground_truths = [result["ground_truths"] for result in results]
+            ground_truths = [result["ground_truths"][0] if len(result['ground_truths']) > 0 else '' for result in results]
+
+            # print(result_setup, len(questions), len(answers), len(contexts), len(ground_truths))
+
+            assert len(questions) == len(answers) == len(contexts) == len(ground_truths), "The number of questions, answers, contexts, and ground truths must be the same"
+
+            print(len(questions), len(answers), len(contexts), len(ground_truths))
+            print('creating dataset')
 
             results_dataset = Dataset.from_dict(
                 {
                     "question": questions,
                     "contexts": contexts,
                     "answer": answers,
-                    "ground_truths": ground_truths
+                    "ground_truth": ground_truths
                 }
             )
 
+            print('evaluating')
+
             # evaluate results with ragas
-            evaluation = evaluate_ragas_score(results_dataset)
+            evaluation_ = evaluate_ragas_score(results_dataset)
 
-            evalutions[result_setup] = evaluation
+            evaluation = []
+            for e in evaluation_:
+                res = {}
+                for k, v in e.items():
+                    try:
+                        res.update({str(k): float(v)})
+                    except ValueError:
+                        res.update({str(k): str(v)})
+                    except Exception as e:
+                        print(e)
+                        print(k, v)
+                        res.update({str(k): str(v)})
+                evaluation.append(res)
 
-        return evalutions
+            print('saving evaluation to file')
+
+            with open("ragas_evaluation__temp__.json", "a") as f:
+                json.dump(evaluation, f, indent=4)
+
+            # write the evaluation to self.results
+            for i, result in enumerate(results):
+                assert evaluation[i]['answer'] == result['answer'], "The answers in the evaluation do not match the answers in the results"
+                for key, value in evaluation[i].items():
+                    if key not in result:
+                        result[key] = value
+            print(f"evaluation {j+1}/{len_results} done")
+            j += 1
+
+    def evaluate_with_answer_similarity(self):
+        assert self.results is not None, "Experiment must be run before evaluation"
+
+        answers = []
+        ground_truths = []
+
+        for result_setup, results in self.results.items():
+            if result_setup == "times":
+                continue
+            if len(results) == 0:
+                warnings.warn(f"No results found for {result_setup}, skipping evaluation")
+                continue
+
+            # get all questions and answers
+            answers += [result["answer"] for result in results]
+
+            # get all ground truths
+            ground_truths += [result["ground_truths"][0] for result in results]
+
+        # evaluate results with answer similarity
+        evaluation = evaluate_answer_similarity(answers, ground_truths)
+
+        j = 0
+
+        for result_setup, results in self.results.items():
+            if result_setup == "times":
+                continue
+            # write the evaluation to self.results
+            for i, result in enumerate(results):
+                result["answer_similarity"] = float(evaluation[j])
+                j += 1
 
     def evaluate_with_rouge_score(self):
         assert self.results is not None, "Experiment must be run before evaluation"
 
-        if "evaluations" in self.results:
-            return self.results["evaluations"]
-
-        evaluations = {}
-
         for result_setup, results in self.results.items():
             if result_setup == "times":
+                continue
+            if len(results) == 0:
+                warnings.warn(f"No results found for {result_setup}, skipping evaluation")
                 continue
 
             # get all questions and answers
@@ -371,7 +553,7 @@ class Experiment:
             for key, value in evaluation.items():
                 for i, result in enumerate(results):
                     if key not in result:
-                        result[key] = value[i]
+                        result[key] = float(value[i])
                         # if given context contains ground truth, set retrieval to 1
                         result["retrieval"] = 0
                         for ground_truth in result["ground_truths"]:
@@ -379,10 +561,50 @@ class Experiment:
                                 result["retrieval"] = 1
                                 break
 
-            evaluations[result_setup] = {key: sum(value) / len(value) for key, value in evaluation.items()}
-            evaluations[result_setup]["retrieval"] = sum(result["retrieval"] for result in results) / len(results)
-            evaluations[result_setup]["ground_rank"] = sum(result.get("ground_rank", 0) for result in results) / len(results)
-            evaluations[result_setup]["ground_distance"] = sum(result.get("ground_distance", 0) for result in results) / len(results)
+    def aggregate_evaluations(self, rogue: bool = True, ragas: bool = False, answer_similarity: bool = True):
+        assert self.results is not None, "Experiment must be run before evaluation"
+
+        if "evaluations" in self.results:
+            return self.results["evaluations"]
+
+        evaluations = {}
+
+        keys_basic = ['retrieval', 'ground_rank', 'ground_distance']
+        keys_rouge = ["fmeasure", "precision", "recall"]
+        keys_ragas = ["answer_relevancy", "context_precision", "context_recall", "context_relevancy", "answer_similarity"] # "answer_correctness",
+        keys_answer_similarity = ["answer_similarity"]
+
+        keys = keys_basic
+        if rogue:
+            keys += keys_rouge
+            self.evaluate_with_rouge_score()
+        if ragas:
+            keys += keys_ragas
+            os.environ["OPENAI_API_KEY"] = ""
+            self.evaluate_with_ragas()
+        if answer_similarity:
+            keys += keys_answer_similarity
+            self.evaluate_with_answer_similarity()
+
+        self.save_results()
+
+        for result_setup, results in self.results.items():
+            if result_setup == "times":
+                continue
+            evaluations[result_setup] = {}
+            for key in keys:
+                if key not in evaluations[result_setup]:
+                    evaluations[result_setup][key] = []
+                for result in results:
+                    evaluations[result_setup][key].append(result[key])
+
+                if len(evaluations[result_setup][key]) == 0:
+                    print(key)
+                    print(evaluations[result_setup][key])
+                    evaluations[result_setup][key] = 0
+                    continue
+
+                evaluations[result_setup][key] = sum(evaluations[result_setup][key]) / len(evaluations[result_setup][key])
 
         overall = {}
 
@@ -394,9 +616,6 @@ class Experiment:
             setup = "_".join(result_setup.split("_")[:-2])
             if setup not in overall:
                 overall[setup] = {key: 0 for key in evaluation.keys()}
-                overall[setup]["retrieval"] = 0
-                overall[setup]["ground_rank"] = 0
-                overall[setup]["ground_distance"] = 0
             for key, value in evaluation.items():
                 overall[setup][key] += value/len(self.dataset)
 
