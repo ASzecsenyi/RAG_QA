@@ -31,5 +31,3 @@ class SentChunker(Chunker):
                     len(sentences),
                     self.chunk_length - int(self.chunk_length * self.sliding_window_size)
                 )]
-
-

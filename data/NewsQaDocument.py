@@ -1,4 +1,3 @@
-import warnings
 from typing import Any
 
 from tqdm import tqdm
@@ -321,7 +320,7 @@ class NewsQaDocument(Document):
 
     def __init__(self, name: str = None, story_id: str = None, split: str = 'test'):
         """
-        :param name: the dataset identifier - name used in paper it is released with, e.g. "hotpot_qa"
+        :param name: the document identifier
         :type name: str, optional
         :param story_id: the id of the story to get data from
         :type story_id: str

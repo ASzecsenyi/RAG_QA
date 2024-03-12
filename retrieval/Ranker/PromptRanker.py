@@ -2,7 +2,6 @@ import os
 import time
 import warnings
 
-import numpy as np
 import requests
 
 from retrieval.Ranker import Ranker

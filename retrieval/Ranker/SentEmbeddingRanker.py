@@ -12,9 +12,6 @@ class SentEmbeddingRanker(Ranker):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
-
-        :param kwargs: Keyword arguments for the TfidfVectorizer
-        :type kwargs: dict
         """
         super().__init__(top_k, name)
         self.index = None

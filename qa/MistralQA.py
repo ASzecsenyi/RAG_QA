@@ -68,7 +68,7 @@ class MistralQA(QA):
                 }
             )
         except requests.exceptions.ConnectionError:
-            print("Paused due to lost connection. Press enter to continue.")
+            print("Paused due to lost connection.")
             return self.predict(question, chunks)
 
         try:

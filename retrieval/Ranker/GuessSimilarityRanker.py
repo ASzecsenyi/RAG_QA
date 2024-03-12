@@ -3,7 +3,6 @@ import time
 
 import numpy as np
 import requests
-import torch
 
 from retrieval.Ranker import Ranker
 from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker

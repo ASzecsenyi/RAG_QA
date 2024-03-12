@@ -1,10 +1,8 @@
 import json
-import os
 import time
 import warnings
 from datetime import datetime
 from uuid import uuid4
-import faiss
 import torch
 
 import numpy as np
@@ -13,8 +11,7 @@ from ragas.metrics import (
     answer_relevancy,
     context_precision,
     context_recall,
-    answer_correctness,
-    answer_similarity,
+    # answer_similarity,
     context_relevancy,
 )
 from langchain_community.llms import HuggingFaceEndpoint
@@ -80,9 +77,8 @@ def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
         context_relevancy,
 
         # answer_correctness,
-        answer_similarity,
+        # answer_similarity,
     ]
-
 
     key = os.environ["HUGGINGFACE_API_KEY"]
     llm = HuggingFaceEndpoint(huggingfacehub_api_token=key,
@@ -167,7 +163,7 @@ class Experiment:
             self.chunker = [self.chunker]
 
         if not isinstance(self.ranker, list):
-            self.ranker = [self.ranker]
+            self.ranker: list[Ranker] = [self.ranker]
 
         if not isinstance(self.qa, list):
             self.qa = [self.qa]
@@ -175,9 +171,9 @@ class Experiment:
         self.results = None
         self.verbose = False
 
-    def r(self, function, text, times, silenced=False, **kwargs):
-        # if self.verbose and not silenced:
-        #     print(f"{text}")
+    def r(self, function, text, times, silenced=True, **kwargs):
+        if self.verbose and not silenced:
+            print(f"{text}")
 
         start_time = time.time()
 
@@ -222,6 +218,7 @@ class Experiment:
         total_remaining_results = total_num_of_results - num_of_initial_results
 
         for dataset in self.dataset:
+            paragraphs = None
             if hasattr(dataset, "paragraphs"):
                 paragraphs = dataset.paragraphs
             for chunker in self.chunker:
@@ -246,6 +243,9 @@ class Experiment:
                         time_left = (total_remaining_results - num_of_processed_results) * (time.time() - start_time) / num_of_processed_results
                         print(f"{datetime.now().strftime('%H:%M:%S')}: Estimated time left: {time.strftime('%d, %H:%M:%S', time.gmtime(time_left))}")
                     for question in tqdm(dataset.questions, desc=f"Running experiment on {dataset.name} with {chunker.name} and {ranker.name}"):
+                        guesses = None
+                        ground_rank = -1
+                        ground_distance = -1
                         if not get_ground_ranks:
                             contexts = self.r(ranker.rank, f"Ranking question with ranker {ranker.name}", times, query=question["question"], silenced=True)
                             if isinstance(ranker, GuessSimilarityRanker) or isinstance(ranker, PromptRanker):
@@ -325,7 +325,6 @@ class Experiment:
 
         # if more than 5 files with the same name, delete the oldest
         files = os.listdir(f"../data/experiments")
-        abs_paths = [os.path.abspath(f"../data/experiments/{file}") for file in files]
         files.sort(key=lambda x: os.path.getmtime(f"../data/experiments/{x}"))
         files = [file for file in files if file.startswith(self.name)]
         if len(files) > 5:
@@ -571,7 +570,7 @@ class Experiment:
 
         keys_basic = ['retrieval', 'ground_rank', 'ground_distance']
         keys_rouge = ["fmeasure", "precision", "recall"]
-        keys_ragas = ["answer_relevancy", "context_precision", "context_recall", "context_relevancy", "answer_similarity"] # "answer_correctness",
+        keys_ragas = ["answer_relevancy", "context_precision", "context_recall", "context_relevancy"]
         keys_answer_similarity = ["answer_similarity"]
 
         keys = keys_basic

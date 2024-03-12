@@ -35,17 +35,11 @@ def answer_single_question(
     :return: The answer
     """
 
-    # print(type(dataset))
-    # print(dataset[:5])
-
     if isinstance(dataset, str):
         dataset = TextDocument(dataset)
 
     # get chunks
     chunks = chunker.chunk(document=dataset.document)
-
-    # print(type(chunks))
-    # print(chunks[:5])
 
     # init ranker
     ranker.init_chunks(chunks=chunks)

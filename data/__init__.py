@@ -78,4 +78,3 @@ class Document(ABC):
 
         with open(path, "w") as f:
             json.dump(self.__dict__, f, indent=4)
-

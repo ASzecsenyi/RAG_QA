@@ -1,4 +1,3 @@
-import warnings
 from typing import Any, Literal
 
 from data import Document
@@ -212,12 +211,12 @@ qasper_top_200 = [
 
 class QAsperDocument(Document):
     """
-    A document from the NewsQA dataset.
+    A document from the QAsper dataset.
     """
 
     def __init__(self, name: str = None, story_id: str = None, split: Literal['train', 'validation', 'test'] = 'test'):
         """
-        :param name: the dataset identifier - name used in paper it is released with, e.g. "hotpot_qa"
+        :param name: the document identifier
         :type name: str, optional
         :param story_id: the id of the story to get data from
         :type story_id: str
@@ -239,10 +238,6 @@ class QAsperDocument(Document):
                 story = s
                 break
 
-        # assert len(story) == 1, "story_id must be in the dataset"
-
-        # story = story[0]
-
         # it is assumed that all story_text instances with the same story_id are the same
 
         document = '\n\n'.join(['\n'.join(section) for section in story['full_text']['paragraphs']])
@@ -259,7 +254,7 @@ class QAsperDocument(Document):
             answer_type = 'NONE'
             # dict_keys(['unanswerable', 'extractive_spans', 'yes_no', 'free_form_answer', 'evidence', 'highlighted_evidence'])
             # print(answer)
-            for i, ans in enumerate(answer):
+            for ans in answer:
                 if ans['unanswerable']:
                     if answer_types.index(answer_type) < answer_types.index('UNANSWERABLE'):
                         ground_truths.append("[UNKNOWN]")
@@ -281,12 +276,6 @@ class QAsperDocument(Document):
 
             if len(ground_truths) == 0:
                 ground_truths.append("[UNKNOWN]")
-
-            # if answer_types.index(answer_type) < answer_types.index('EXTRACTIVE'):
-            #     warnings.warn(f"Only {answer_type} or worse answers found for question {question}.")
-            # if answer_type == 'FREE_FORM':
-            #     print(question)
-            #     print(ground_truths[-1])
 
             questions.append(
                 {

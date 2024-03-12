@@ -1,4 +1,3 @@
-import faiss
 import numpy as np
 import torch
 from sentence_transformers import CrossEncoder
@@ -12,9 +11,6 @@ class CrossEncodingRanker(Ranker):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
-
-        :param kwargs: Keyword arguments for the TfidfVectorizer
-        :type kwargs: dict
         """
         super().__init__(top_k, name)
         self.index = None

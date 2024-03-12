@@ -28,7 +28,7 @@ class UXDocument(Document):
 
     def __init__(self, name: str = None, chapter: str = None):
         """
-        :param name: the dataset identifier - name used in paper it is released with, e.g. "hotpot_qa"
+        :param name: the document identifier
         :type name: str, optional
         :param chapter: the id of the story to get data from
         :type chapter: str

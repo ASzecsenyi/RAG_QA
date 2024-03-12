@@ -8,7 +8,7 @@ from qa import QA
 
 class GemmaQA(QA):
     """
-    Mistral QA model.
+    Gemma QA model.
     """
 
     default_prompt = (
@@ -68,7 +68,7 @@ class GemmaQA(QA):
                 }
             )
         except requests.exceptions.ConnectionError:
-            print("Paused due to lost connection. Press enter to continue.")
+            print("Paused due to lost connection.")
             return self.predict(question, chunks)
 
         try:

@@ -10,14 +10,10 @@ class HybridRanker(Ranker):
     def __init__(self, top_k: int, name=None,
                  sparse: Ranker = TfidfRanker(top_k=5),
                  dense: Ranker = CrossEncodingRanker(top_k=5),
-                 sparse_weight: float = 0.5,
-                 **kwargs):
+                 sparse_weight: float = 0.5):
         """
         :param top_k: The number of chunks to return
         :type top_k: int
-
-        :param kwargs: Keyword arguments for the TfidfVectorizer
-        :type kwargs: dict
         """
         super().__init__(top_k, name)
         if name is None:
