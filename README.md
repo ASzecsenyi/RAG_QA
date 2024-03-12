@@ -2,16 +2,21 @@
 
 This repository is dedicated to the RAG_QA project, which focuses on Retrieval Augmented Question Answering. The project aims to benchmark different retrieval strategies, employ various language models for answer generation, and evaluate performance using different datasets. 
 
+For results produced with this project, please refer to the [drive repo](https://livemanchesterac-my.sharepoint.com/:f:/g/personal/andras_szecsenyi_student_manchester_ac_uk/EtoQxq_66apJvMeiJDtEroEB59kFMGsEV6FfvEjrkFYoIw?e=hSdsJx). This should be accessible by all University accounts.
+
+For questions, please contact the authors of the project at [andras.szecsenyi@student.manchester.ac.uk](mailto:andras.szecsenyi@student.manchester.ac.uk)
+
 ## Project Structure
 
-- `rag_qa/`: Django project root.
+- `experiment_app/`: Django app root.
+- `rgqa_project/`: Django project.
 - `retrieval/`: Retrieval strategies.
 - `qa/`: Question answering models.
 - `data/`: Datasets for evaluation.
 - `experiments/`: Experiment configurations, results, and logs.
 - `notebooks/`: Jupyter notebooks for data analysis.
 - `scripts/`: Standalone Python scripts.
-- `doc/`: Research papers and documentation.
+- `media/`: Uploaded files.
 - `requirements.txt`: Required Python packages.
 - `manage.py`: Django management script.
 
@@ -65,7 +70,7 @@ To run the interactive Django shell:
     docker-compose up
     ```
 
-3. Navigate to http://localhost:8000/upload/ in your browser
+3. Navigate to http://localhost:8000/ in your browser
 
 4. Upload a text file, pose a question and click 'Upload'
 
@@ -75,5 +80,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-- TODO: Mention any contributors or sources of inspiration here.
+- Thx Riza and Maksim for their guidance and support.
 
