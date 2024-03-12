@@ -16,8 +16,8 @@ from ragas.metrics import (
 )
 from langchain_community.llms import HuggingFaceEndpoint
 import os
-from ragas.llms import LangchainLLMWrapper
-from ragas.embeddings import HuggingfaceEmbeddings
+# from ragas.llms import LangchainLLMWrapper
+# from ragas.embeddings import HuggingfaceEmbeddings
 
 from datasets import Dataset
 from typing import Union, Any
@@ -84,8 +84,10 @@ def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
     llm = HuggingFaceEndpoint(huggingfacehub_api_token=key,
                               endpoint_url="https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1",
                               task="text2text-generation")
-    llm = LangchainLLMWrapper(llm)
-    hf_embeddings = HuggingfaceEmbeddings(model_name="BAAI/bge-small-en")
+    # llm = LangchainLLMWrapper(llm)
+    # hf_embeddings = HuggingfaceEmbeddings(model_name="BAAI/bge-small-en")
+
+    hf_embeddings = None
 
     return evaluate(dataset=results_dataset, metrics=metrics, llm=llm, embeddings=hf_embeddings, raise_exceptions=False).to_pandas().to_dict(orient="records")
 
