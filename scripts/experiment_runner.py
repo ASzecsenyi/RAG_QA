@@ -21,6 +21,7 @@ from retrieval.Ranker import RandomRanker
 # documents = [UXDocument(name=f"ux_{chapter}", chapter=chapter) for chapter in chapters]
 # document = UXDocument()
 
+
 newsqa_documents = [NewsQaDocument(name=f"newsqa_{i}", story_id=story, split='train') for
              i, story in enumerate(newsqa_top_300[:100])]
 
@@ -48,6 +49,8 @@ chunker = SentChunker(chunk_length=2, sliding_window_size=0.5)
 chunker1 = SentChunker(chunk_length=3, sliding_window_size=0.5)
 chunker2 = SentChunker(chunk_length=4, sliding_window_size=0.5)
 
+all_chunkers = [chunker, chunker1, chunker2]
+
 
 tfidf_ranker = TfidfRanker(top_k=5)
 # se_ranker = SentEmbeddingRanker(top_k=5)
@@ -56,6 +59,8 @@ gs_ranker = GuessSimilarityRanker(top_k=5)
 hy_ranker = HybridRanker(top_k=5)
 random_ranker = RandomRanker(top_k=5)
 p_ranker = PromptRanker(top_k=5)
+
+all_rankers = [tfidf_ranker, ce_ranker, gs_ranker, hy_ranker, random_ranker, p_ranker]
 
 mi_qa = MistralQA(name="mistralqa")
 lam_qa = LlamaQA(name="llamaqa")
@@ -69,10 +74,10 @@ experiment = Experiment(
     description="Uniform prompts, All default rankers, SentChunker, 5 top_k, 100 newsqa, 200 qasper, 300 total"
                 "06/03/2024: 21:52",
     dataset=documents,
-    chunker=[chunker],
-    ranker=[ce_ranker],#, ce_ranker, gs_ranker, hy_ranker, random_ranker],
-    qa=gem_qa,  # [mi_qa],# mi_qa, lam_qa]  # , gpt_qa]
-    autoload=False
+    chunker=all_chunkers,
+    ranker=all_rankers,
+    qa=all_qas,
+    # autoload=False
 )
 
 experiment.verbose = True
@@ -84,11 +89,10 @@ results = experiment.run(get_ground_ranks=True)
 # print(json.dumps(results, indent=4, sort_keys=True))
 
 # save results
-experiment.save_results()
+# experiment.save_results()
 
-# evaluation = experiment.evaluate_with_ragas()
+evaluation = experiment.aggregate_evaluations()
 
-evaluation = experiment.evaluate_with_rouge_score()
 
 experiment.save_results()
 
