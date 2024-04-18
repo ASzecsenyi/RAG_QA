@@ -65,7 +65,7 @@ class GptQA(QA):
             {"role": "user", "content": str(user)},
         ]
         try:
-            response = openai.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 temperature=0,
                 max_tokens=100,

@@ -562,7 +562,7 @@ class Experiment:
                                 result["retrieval"] = 1
                                 break
 
-    def aggregate_evaluations(self, rogue: bool = True, ragas: bool = False, answer_similarity: bool = True):
+    def aggregate_evaluations(self, rogue: bool = True, ragas: bool = False, answer_similarity: bool = False):
         assert self.results is not None, "Experiment must be run before evaluation"
 
         if "evaluations" in self.results:
@@ -570,7 +570,7 @@ class Experiment:
 
         evaluations = {}
 
-        keys_basic = ['retrieval', 'ground_rank', 'ground_distance']
+        keys_basic = ['retrieval']#, 'ground_rank', 'ground_distance']
         keys_rouge = ["fmeasure", "precision", "recall"]
         keys_ragas = ["answer_relevancy", "context_precision", "context_recall", "context_relevancy"]
         keys_answer_similarity = ["answer_similarity"]

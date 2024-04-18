@@ -115,7 +115,7 @@ def experiment_create_view(request):
             # print(experiment_run)
 
             experiment_run.run()
-            experiment_run.evaluate_with_rouge_score()
+            experiment_run.aggregate_evaluations()
             results = experiment_run.results
 
 
