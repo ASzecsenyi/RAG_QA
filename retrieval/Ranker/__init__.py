@@ -1,6 +1,8 @@
 import random
 from abc import ABC, abstractmethod
 
+from typing import List, Union, Tuple
+
 
 class Ranker(ABC):
     def __init__(self, top_k: int, name: str = None):
@@ -17,7 +19,7 @@ class Ranker(ABC):
             self.name = self.__class__.__name__ + f"_{top_k}"
 
     @abstractmethod
-    def init_chunks(self, chunks: list[str]):
+    def init_chunks(self, chunks: List[str]):
         """
         Initialises the ranker with a list of chunks.
         :param chunks: The chunks
@@ -26,7 +28,7 @@ class Ranker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         """
         Ranks the chunks based on a query.
         :param query: The query
@@ -39,7 +41,7 @@ class Ranker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         """
         Ranks the chunks based on a list of queries.
         :param queries: The queries
@@ -60,14 +62,14 @@ class RandomRanker(Ranker):
         """
         super().__init__(top_k, name)
 
-    def init_chunks(self, chunks: list[str]):
+    def init_chunks(self, chunks: List[str]):
         self.chunks = chunks
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         if return_similarities:
             order = random.sample(range(len(self.chunks)), len(self.chunks))
             return [(self.chunks[i], 1 - i / len(self.chunks)) for i in order]
         return random.sample(self.chunks, self.top_k)
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         return [random.sample(self.chunks, self.top_k) for _ in range(len(queries))]

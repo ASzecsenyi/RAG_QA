@@ -12,7 +12,7 @@ from ragas.metrics import (
     context_precision,
     context_recall,
     # answer_similarity,
-    context_relevancy,
+    # context_relevancy,
 )
 from langchain_community.llms import HuggingFaceEndpoint
 import os
@@ -20,19 +20,20 @@ import os
 # from ragas.embeddings import HuggingfaceEmbeddings
 
 from datasets import Dataset
-from typing import Union, Any
+from typing import Union, Any, List, Dict
 from rouge_score import rouge_scorer
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 
 from data import Document
-from retrieval import Chunker, Ranker
+from retrieval.Chunker import Chunker
+from retrieval.Ranker import Ranker
 from qa import QA
 from retrieval.Ranker.GuessSimilarityRanker import GuessSimilarityRanker
 from retrieval.Ranker.PromptRanker import PromptRanker
 
 
-def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[str, list[float]]:
+def evaluate_rouge_score(answers: List[str], ground_truths: List[str]) -> Dict[str, List[float]]:
     """
     Evaluates the answers with the ROGUE score.
 
@@ -59,7 +60,7 @@ def evaluate_rouge_score(answers: list[str], ground_truths: list[str]) -> dict[s
     return final_score
 
 
-def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
+def evaluate_ragas_score(results_dataset: Dataset) -> List[Dict[str, float]]:
     """
     Evaluates the results with ragas.
 
@@ -74,7 +75,7 @@ def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
         answer_relevancy,
         context_precision,
         context_recall,
-        context_relevancy,
+        # context_relevancy,
 
         # answer_correctness,
         # answer_similarity,
@@ -92,7 +93,7 @@ def evaluate_ragas_score(results_dataset: Dataset) -> list[dict[str, float]]:
     return evaluate(dataset=results_dataset, metrics=metrics, llm=llm, embeddings=hf_embeddings, raise_exceptions=False).to_pandas().to_dict(orient="records")
 
 
-def evaluate_answer_similarity(answers: list[str], ground_truths: list[str]) -> list[float]:
+def evaluate_answer_similarity(answers: List[str], ground_truths: List[str]) -> List[float]:
     assert len(answers) == len(ground_truths), "The number of answers and ground truths must be the same"
     model = SentenceTransformer('BAAI/bge-small-en', device="cuda" if torch.cuda.is_available() else "cpu")
 
@@ -125,10 +126,10 @@ class Experiment:
             self,
             name: str,
             description: str,
-            dataset: Union[Document, list[Document]],
-            chunker: Union[Chunker, list[Chunker]],
-            ranker: Union[Ranker, list[Ranker]],
-            qa: Union[QA, list[QA]],
+            dataset: Union[Document, List[Document]],
+            chunker: Union[Chunker, List[Chunker]],
+            ranker: Union[Ranker, List[Ranker]],
+            qa: Union[QA, List[QA]],
             autoload: bool = True
     ):
         """
@@ -165,7 +166,7 @@ class Experiment:
             self.chunker = [self.chunker]
 
         if not isinstance(self.ranker, list):
-            self.ranker: list[Ranker] = [self.ranker]
+            self.ranker: List[Ranker] = [self.ranker]
 
         if not isinstance(self.qa, list):
             self.qa = [self.qa]
@@ -187,7 +188,7 @@ class Experiment:
 
         return result
 
-    def run(self, get_ground_ranks: bool = False) -> dict[str, dict[Any, Any]]:
+    def run(self, get_ground_ranks: bool = False) -> Dict[str, Dict[Any, Any]]:
         """
         Runs the experiment(s).
 

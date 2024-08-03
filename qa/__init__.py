@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from typing import List
+
 
 class QA(ABC):
     """
@@ -19,7 +21,7 @@ class QA(ABC):
             self.name = self.__class__.__name__
 
     @abstractmethod
-    def predict(self, question: str, chunks: list[str]) -> str:
+    def predict(self, question: str, chunks: List[str]) -> str:
         """
         Predicts the answer to a question given a context.
 

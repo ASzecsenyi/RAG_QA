@@ -7,6 +7,5 @@ WORKDIR /code
 
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
-COPY nltk_data/tokenizers/punkt /root/nltk_data/tokenizers/punkt
 
 COPY . /code/

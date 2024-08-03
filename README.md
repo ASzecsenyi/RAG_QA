@@ -50,19 +50,39 @@ For questions, please contact the authors of the project at [andras.szecsenyi@st
     pip install -r requirements.txt
     ```
    
-9. Start docker desktop
+9. Set the environment variables HUGGINGFACE_API_KEY and OPENAI_API_KEY:
+
+    ```bash
+    export HUGGINGFACE_API_KEY=your_huggingface_api_key
+    export OPENAI_API_KEY=your_openai_api_key
+    ```
    
-10. Run the following command in the root directory of the project:
+10. Start docker desktop
+   
+11. Run the following command in the root directory of the project:
 
     ```bash
     docker-compose build
     ```
+    
+12. Run the following command in the root directory of the project:
+
+    ```bash
+    docker-compose run web python manage.py migrate
+    ```
+    
+13. Run the following command in the root directory of the project:
+
+    ```bash
+    docker-compose run web python manage.py createsuperuser
+    ```
+
 
 ## Usage
 
 To run the interactive Django shell:
 
-1. Do steps 1-10 in the 'Getting Started' section
+1. Do steps 1-13 in the 'Getting Started' section
 
 2. Run the following command in the root directory of the project:
 
@@ -73,6 +93,9 @@ To run the interactive Django shell:
 3. Navigate to http://localhost:8000/ in your browser
 
 4. Upload a text file, pose a question and click 'Upload'
+
+5. To access the Django admin interface, navigate to http://localhost:8000/admin/ in your browser and log in with the superuser credentials created in step 13 of the 'Getting Started' section
+
 
 ## License
 

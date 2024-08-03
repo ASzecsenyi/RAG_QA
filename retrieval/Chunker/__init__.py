@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from typing import List
+
 
 class Chunker(ABC):
     def __init__(self, chunk_length: int, sliding_window_size: float = 0.0, name: str = None):
@@ -21,7 +23,7 @@ class Chunker(ABC):
             self.name = self.__class__.__name__ + f"_{chunk_length}_{sliding_window_size}"
 
     @abstractmethod
-    def chunk(self, document: str) -> list[str]:
+    def chunk(self, document: str) -> List[str]:
         """
         Chunks a document into smaller pieces.
 

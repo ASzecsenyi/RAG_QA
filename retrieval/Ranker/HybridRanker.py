@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List, Tuple, Union
 
 from retrieval.Ranker import Ranker
 from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
@@ -23,15 +24,15 @@ class HybridRanker(Ranker):
         self.dense_ranker = dense
         self.sparse_weight = sparse_weight
 
-    def init_chunks(self, chunks: list[str]):
+    def init_chunks(self, chunks: List[str]):
         self.chunks = chunks
         self.sparse_ranker.init_chunks(chunks)
         self.dense_ranker.init_chunks(chunks)
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         # [(chunk, sim), ...]
-        sparse_rank: list[tuple[str, float]] = self.sparse_ranker.rank(query, return_similarities=True)
-        dense_rank: list[tuple[str, float]] = self.dense_ranker.rank(query, return_similarities=True)
+        sparse_rank: List[Tuple[str, float]] = self.sparse_ranker.rank(query, return_similarities=True)
+        dense_rank: List[Tuple[str, float]] = self.dense_ranker.rank(query, return_similarities=True)
 
         # print("")
         # print(sparse_rank[:5])
@@ -76,5 +77,5 @@ class HybridRanker(Ranker):
 
         return [x[0] for x in combined_rank[:self.top_k]]
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         raise NotImplementedError

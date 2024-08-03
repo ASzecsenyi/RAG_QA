@@ -3,7 +3,7 @@ from django.shortcuts import render
 from experiments.Experiment import Experiment
 
 from data.TextDocument import TextDocument
-from data.NewsQaDocument import NewsQaDocument, newsqa_top_300
+# from data.NewsQaDocument import NewsQaDocument, newsqa_top_300
 from data.QAsperDocument import QAsperDocument, qasper_top_200
 
 from retrieval.Chunker.CharChunker import CharChunker
@@ -42,7 +42,7 @@ evals = {
 }
 
 doc_evals = {
-    'NewsQaDocument': NewsQaDocument,
+    # 'NewsQaDocument': NewsQaDocument,
     'QAsperDocument': QAsperDocument,
 }
 
@@ -67,21 +67,21 @@ def experiment_create_view(request):
                 )
                 datasets.append(file_data)
 
-            for news_qa_document in experiment.experimentnewsqadocument_set.all():
-                for story_id in range(news_qa_document.num_of_stories):
-                    if news_qa_document.newsqa_type == 'NewsQaDocument':
-                        file_data = doc_evals[news_qa_document.newsqa_type](
-                            story_id=newsqa_top_300[story_id],
-                            split='train',
-                            name=f"{news_qa_document.newsqa_name}_{story_id}"
-                        )
-                    else:
-                        file_data = doc_evals[news_qa_document.newsqa_type](
-                            story_id=qasper_top_200[story_id],
-                            name=f"{news_qa_document.newsqa_name}_{story_id}"
-                        )
-
-                    datasets.append(file_data)
+            # for news_qa_document in experiment.experimentnewsqadocument_set.all():
+            #     for story_id in range(news_qa_document.num_of_stories):
+            #         if news_qa_document.newsqa_type == 'NewsQaDocument':
+            #             file_data = doc_evals[news_qa_document.newsqa_type](
+            #                 story_id=newsqa_top_300[story_id],
+            #                 split='train',
+            #                 name=f"{news_qa_document.newsqa_name}_{story_id}"
+            #             )
+            #         else:
+            #             file_data = doc_evals[news_qa_document.newsqa_type](
+            #                 story_id=qasper_top_200[story_id],
+            #                 name=f"{news_qa_document.newsqa_name}_{story_id}"
+            #             )
+#
+            #         datasets.append(file_data)
 
             chunkers = []
             for chunker_params in experiment.experimentchunker_set.all():

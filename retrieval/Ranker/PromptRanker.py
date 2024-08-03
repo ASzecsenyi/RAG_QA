@@ -3,6 +3,7 @@ import time
 import warnings
 
 import requests
+from typing import List, Dict, Tuple, Union
 
 from retrieval.Ranker import Ranker
 from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
@@ -55,15 +56,16 @@ class PromptRanker(Ranker):
 
         self.model = ranker
 
-    def init_chunks(self, chunks: list[str], paragraphs: dict[str, str] = None):
-        self.chunks: list[str] = chunks
-        self.paragraphs: dict[str, str] = paragraphs
+    def init_chunks(self, chunks: List[str], paragraphs: Dict[str, str] = None):
+        self.chunks: List[str] = chunks
+        self.paragraphs: Dict[str, str] = paragraphs
         if paragraphs is None:
             self.paragraphs = {}
             warnings.warn(f"No paragraphs were given. The ranker will function as a regular {self.model.name}.")
 
-    def rank(self, query: str, return_similarities: bool = False) -> tuple[list[str], list[str]] | tuple[list[tuple[str, float]], list[str]]:
-        paragraphs_of_choice: list[str] = self.get_paragraphs(query)
+    def rank(self, query: str, return_similarities: bool = False) -> Union[
+            Tuple[List[str], List[str]], Tuple[List[Tuple[str, float]], List[str]]]:
+        paragraphs_of_choice: List[str] = self.get_paragraphs(query)
 
         paragraphs_of_choice = [paragraph for paragraph in paragraphs_of_choice if paragraph in self.paragraphs.keys()]
 
@@ -93,7 +95,7 @@ class PromptRanker(Ranker):
         self.model.init_chunks(chunks)
         return self.model.rank(query, return_similarities=return_similarities), paragraphs_of_choice
 
-    def get_paragraphs(self, query: str) -> list[str]:
+    def get_paragraphs(self, query: str) -> List[str]:
         if self.paragraphs == {}:
             return []
         inputs = self.prompt.format(query=query, paragraphs=self.paragraphs.keys())
@@ -129,5 +131,5 @@ class PromptRanker(Ranker):
 
         return r_list
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         raise NotImplementedError

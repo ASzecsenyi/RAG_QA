@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from sentence_transformers import CrossEncoder
-
+from typing import List, Union, Tuple
 
 from retrieval.Ranker import Ranker
 
@@ -21,17 +21,17 @@ class CrossEncodingRanker(Ranker):
 
         self.model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2', device=device)
 
-    def init_chunks(self, chunks: list[str]):
-        self.chunks: list[str] = chunks
+    def init_chunks(self, chunks: List[str]):
+        self.chunks: List[str] = chunks
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         scores = self.model.predict([[query, chunk] for chunk in self.chunks])
         indices = np.argsort(scores)[::-1]
         if return_similarities:
             return [(self.chunks[i], scores[i]) for i in indices]
         return [self.chunks[i] for i in indices[:self.top_k]]
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         scores = self.model.predict([[query, chunk] for chunk in self.chunks for query in queries], batch_size=batch_size)
         scores = scores.reshape(len(queries), len(self.chunks))
         indices = np.argsort(scores, axis=1)[:, ::-1]

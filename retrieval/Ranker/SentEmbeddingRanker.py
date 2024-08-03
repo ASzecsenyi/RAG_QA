@@ -2,7 +2,7 @@ import faiss
 import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
-
+from typing import List, Union, Tuple
 
 from retrieval.Ranker import Ranker
 
@@ -22,8 +22,8 @@ class SentEmbeddingRanker(Ranker):
 
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2', device=device)
 
-    def init_chunks(self, chunks: list[str]):
-        self.chunks: list[str] = chunks
+    def init_chunks(self, chunks: List[str]):
+        self.chunks: List[str] = chunks
         vectors = self.model.encode(self.chunks)
 
         embedding_size = len(vectors[0])
@@ -34,7 +34,7 @@ class SentEmbeddingRanker(Ranker):
         self.index = faiss.index_factory(embedding_size, "Flat", faiss.METRIC_INNER_PRODUCT)
         self.index.add(chunks_arr)
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         query_vector = self.model.encode([query])
         query_arr: np.ndarray = np.vstack(query_vector, dtype="float32")
         if return_similarities:
@@ -44,7 +44,7 @@ class SentEmbeddingRanker(Ranker):
             distances, indices = self.index.search(query_arr, self.top_k)
             return [self.chunks[i] for i in indices[0]]
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         query_vectors = self.model.encode(queries)
         query_arr: np.ndarray = np.vstack(query_vectors, dtype="float32")
         _, indices = self.index.search(query_arr, self.top_k)

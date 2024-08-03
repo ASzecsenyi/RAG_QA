@@ -1,5 +1,5 @@
 import time
-from typing import Union
+from typing import Union, List, Tuple
 
 from qa import QA
 
@@ -42,7 +42,7 @@ class GptQA(QA):
 
         openai.api_key = self.api_key
 
-    def predict(self, question: str, chunks: list[str], logprobs: bool = False) -> Union[str, tuple[str, list]]:
+    def predict(self, question: str, chunks: List[str], logprobs: bool = False) -> Union[str, Tuple[str, list]]:
         """
         Predicts the answer to a question given a context.
 

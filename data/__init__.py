@@ -1,6 +1,6 @@
 from abc import ABC
 import json
-from typing import Any
+from typing import Any, List, Dict
 
 
 class Document(ABC):
@@ -10,7 +10,7 @@ class Document(ABC):
     stores document sets, questions over the document set, golden passages for each question, and golden answers for each question.
     """
 
-    def __init__(self, document: str, name: str = None, questions: list[dict[str, Any]] = None):
+    def __init__(self, document: str, name: str = None, questions: List[Dict[str, Any]] = None):
         """
         :param name: the dataset identifier - name used in paper it is released with, e.g. "hotpot_qa"
         :type name: str, optional
@@ -23,7 +23,7 @@ class Document(ABC):
         if name is None:
             self.name = "_".join(document.split()[:5])
         self.document: str = document
-        self.questions: list[dict[str, Any]] = questions
+        self.questions: List[Dict[str, Any]] = questions
 
         assert isinstance(self.document, str), "document must be a string"
         assert isinstance(self.questions, list), "questions must be a list"

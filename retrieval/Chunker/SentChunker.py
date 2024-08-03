@@ -1,4 +1,5 @@
 import nltk
+from typing import List
 
 from retrieval.Chunker import Chunker
 
@@ -19,7 +20,7 @@ class SentChunker(Chunker):
         """
         super().__init__(chunk_length, sliding_window_size, name)
 
-    def chunk(self, document: str) -> list[str]:
+    def chunk(self, document: str) -> List[str]:
         sentences = nltk.sent_tokenize(document)
 
         if len(sentences) < self.chunk_length:

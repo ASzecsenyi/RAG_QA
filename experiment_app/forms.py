@@ -1,5 +1,5 @@
 import re
-from typing import Any, List
+from typing import Any, List, Dict
 from django import forms
 from django.db import transaction
 
@@ -79,7 +79,7 @@ class ExperimentForm(forms.ModelForm):
 
         # print(self.id_dict)
 
-    def init_component_fields(self, component, component_fields: dict[str, Any]):
+    def init_component_fields(self, component, component_fields: Dict[str, Any]):
         # get the components of the most recent experiment
         components = component.objects.filter(experiment=self.most_recent_experiment) if self.most_recent_experiment else []
 
@@ -104,7 +104,7 @@ class ExperimentForm(forms.ModelForm):
             self.id_dict[f'{component.__name__}'][i] = comp.id
 
     @transaction.atomic
-    def save_components(self, experiment, component_model, component_fields: dict[str, Any], create_new: bool):
+    def save_components(self, experiment, component_model, component_fields: Dict[str, Any], create_new: bool):
         # print(component_model)
 
         form_component_ids = set([int(key.split('_')[-1]) for key in self.data if
@@ -145,7 +145,7 @@ class ExperimentForm(forms.ModelForm):
     def save(self, commit=True, create_new=False):
         # save request.FILES content to the MEDIA_ROOT
         for file in self.files.values():
-            with open(f'{MEDIA_ROOT}/{file.name}', 'wb') as destination:
+            with open(f'{MEDIA_ROOT}{file.name}', 'wb') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
 

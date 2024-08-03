@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import requests
+from typing import List, Union, Tuple
 
 from retrieval.Ranker import Ranker
 from retrieval.Ranker.CrossEncodingRanker import CrossEncodingRanker
@@ -38,7 +39,7 @@ class GuessSimilarityRanker(Ranker):
         :param kwargs: Keyword arguments for the TfidfVectorizer
         :type kwargs: dict
         """
-        super().__init__(top_k, name=name,)
+        super().__init__(top_k, name=name, )
         self.api_key = api_key
         self.prompt = prompt
         if api_key is None:
@@ -54,12 +55,13 @@ class GuessSimilarityRanker(Ranker):
 
         self.model = ranker
 
-    def init_chunks(self, chunks: list[str]):
-        self.chunks: list[str] = chunks
+    def init_chunks(self, chunks: List[str]):
+        self.chunks: List[str] = chunks
         self.model.init_chunks(chunks)
 
-    def rank(self, query: str, return_similarities: bool = False) -> tuple[list[str], list[str]] | tuple[list[tuple[str, float]], list[str]]:
-        answers: list[str] = self.get_guesses(query)
+    def rank(self, query: str, return_similarities: bool = False) -> Union[
+            Tuple[List[str], List[str]], Tuple[List[Tuple[str, float]], List[str]]]:
+        answers: List[str] = self.get_guesses(query)
         # Get vectors for each answer
         scores = []
         for answer in answers:
@@ -74,7 +76,7 @@ class GuessSimilarityRanker(Ranker):
             return mean_scores, answers
         return [x for x, _ in mean_scores][:self.top_k], answers
 
-    def get_guesses(self, query: str) -> list[str]:
+    def get_guesses(self, query: str) -> List[str]:
         inputs = self.prompt.format(num_of_paraphrases=self.num_of_paraphrases, query=query)
 
         try:
@@ -105,5 +107,5 @@ class GuessSimilarityRanker(Ranker):
 
         return r_list
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         raise NotImplementedError

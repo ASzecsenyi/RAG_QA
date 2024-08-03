@@ -2,6 +2,7 @@ import os
 import time
 
 import requests
+from typing import List
 
 from qa import QA
 
@@ -40,7 +41,7 @@ class GemmaQA(QA):
         if name is None:
             self.name += f"_{self.api_key[-5:]}"
 
-    def predict(self, question: str, chunks: list[str]) -> str:
+    def predict(self, question: str, chunks: List[str]) -> str:
         """
         Predicts the answer to a question given a context.
 

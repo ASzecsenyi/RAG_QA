@@ -5,6 +5,7 @@ import string
 import nltk
 import contractions
 from nltk.stem import PorterStemmer
+from typing import List, Union, Tuple
 
 from retrieval.Ranker import Ranker
 
@@ -34,19 +35,19 @@ class TfidfRanker(Ranker):
         self.chunks = None
         self.vectors = None
 
-    def init_chunks(self, chunks: list[str]):
+    def init_chunks(self, chunks: List[str]):
         self.chunks = chunks
         fit_chunks = self.preprocess(chunks)
         self.vectors = self.vectorizer.fit_transform(fit_chunks)
 
-    def rank(self, query: str, return_similarities: bool = False) -> list[str] | list[tuple[str, float]]:
+    def rank(self, query: str, return_similarities: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         query_vector = self.vectorizer.transform([self.preprocess_chunk(query)])
         cosine_similarities = cosine_similarity(query_vector, self.vectors).flatten()
         if return_similarities:
             return [(self.chunks[i], cosine_similarities[i]) for i in cosine_similarities.argsort()[::-1]]
         return [x for _, x in sorted(zip(cosine_similarities, self.chunks), reverse=True)][:self.top_k]
 
-    def preprocess(self, chunks: list[str]) -> list[str]:
+    def preprocess(self, chunks: List[str]) -> List[str]:
         # remove punctuation, lowercase, and remove stopwords, if any
         return [self.preprocess_chunk(chunk) for chunk in chunks]
 
@@ -75,7 +76,7 @@ class TfidfRanker(Ranker):
 
         return ' '.join(tokens)
 
-    def batch_rank(self, queries: list[str], batch_size: int = 100) -> list[list[str]]:
+    def batch_rank(self, queries: List[str], batch_size: int = 100) -> List[List[str]]:
         query_vectors = self.vectorizer.transform([self.preprocess_chunk(query) for query in queries])
         cosine_similarities = cosine_similarity(query_vectors, self.vectors)
         return [[x for _, x in sorted(zip(cosine_similarities[i], self.chunks), reverse=True)][:self.top_k] for i in range(len(queries))]
