@@ -4,7 +4,7 @@ This repository is dedicated to the RAG_QA project, which focuses on Retrieval A
 
 For results produced with this project, please refer to the [drive repo](https://livemanchesterac-my.sharepoint.com/:f:/g/personal/andras_szecsenyi_student_manchester_ac_uk/EtoQxq_66apJvMeiJDtEroEB59kFMGsEV6FfvEjrkFYoIw?e=hSdsJx). This should be accessible by all University accounts.
 
-For questions, please contact the authors of the project at [andras.szecsenyi@student.manchester.ac.uk](mailto:andras.szecsenyi@student.manchester.ac.uk)
+For questions, please contact the authors of the project at [andras.szecsenyi@gmail.com](mailto:andras.szecsenyi@gmail.com)
 
 ## Project Structure
 
